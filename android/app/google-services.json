@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "977895377000",
+    "project_id": "blocksafe-ug",
+    "storage_bucket": "blocksafe-ug.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:977895377000:android:1118f5fecf6a95511fd3dd",
+        "android_client_info": {
+          "package_name": "com.blocksafeug.mobile_app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "977895377000-tg1r1al1gjltj87sm4riofephr0prbb3.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAF8TTOswbSB6AT7LYzPoIVv7sqB4j2JIw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "977895377000-tg1r1al1gjltj87sm4riofephr0prbb3.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
