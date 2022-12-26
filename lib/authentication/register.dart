@@ -21,12 +21,8 @@ class _RegisterState extends State<Register> {
   final _formKey = GlobalKey<FormState>();
 
   @override
-  void initState() {
-    _ethUtils.initialSetup();
-    super.initState();
-  }
-
   Widget build(BuildContext context) {
+    _ethUtils.initialSetup();
     return Scaffold(
       backgroundColor: const Color.fromRGBO(178, 216, 230, 1),
       body: SafeArea(
@@ -76,17 +72,18 @@ class _RegisterState extends State<Register> {
                       child: ElevatedButton(
                           onPressed: () async {
                             if (_formKey.currentState!.validate()) {
-                              await _auth
+                              var value = await _auth
                                   .registerWithEmailAndPassword(
                                       emailController.text,
                                       passwordController.text)
                                   .then((value) {
-                                if (value != null) {
+                                if (value == null) {
                                   Navigator.push(
                                       context,
                                       MaterialPageRoute(
-                                          builder: ((context) =>
-                                              VerifyEmail())));
+                                          builder: (context) => VerifyEmail()));
+                                } else {
+                                  print(value);
                                 }
                               });
                             }

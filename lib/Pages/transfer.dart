@@ -20,7 +20,7 @@ class _TransferState extends State<Transfer> {
 
   final TextEditingController messageController = TextEditingController();
 
-  late int charge;
+  late int charge = 0;
 
   @override
   Widget build(BuildContext context) {
@@ -61,36 +61,35 @@ class _TransferState extends State<Transfer> {
                 width: MediaQuery.of(context).size.width - 20,
                 height: 180,
                 child: StreamBuilder<QuerySnapshot>(
-                  stream: _userTransfer,
-                  builder: (BuildContext context,
-                      AsyncSnapshot<QuerySnapshot> snapshot) {
-                    if (snapshot.hasError) {
-                      return Text('Something went wrong');
-                    }
+                    stream: _userTransfer,
+                    builder: (BuildContext context,
+                        AsyncSnapshot<QuerySnapshot> snapshot) {
+                      if (snapshot.hasError) {
+                        return Text('Something went wrong');
+                      }
 
-                    if (snapshot.connectionState == ConnectionState.waiting) {
-                      return Center(child: CircularProgressIndicator());
-                    }
-                    if (snapshot.data!.docs.isEmpty) {
-                      return const Center(child: Text("No data Available"));
-                    }
-                    return ListView(
-                      children:
-                          snapshot.data!.docs.map((DocumentSnapshot document) {
-                        Map<String, dynamic> data =
-                            document.data()! as Map<String, dynamic>;
-                        return TransferDetails(
-                            timeStamp: data["timeStamp"], id: data["to"]);
-                      }).toList(),
-                    );
-                  },
-                )),
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return Center(child: CircularProgressIndicator());
+                      }
+                      if (snapshot.data!.docs.isEmpty) {
+                        return const Center(child: Text("No data Available"));
+                      }
+                      return ListView(
+                        children: snapshot.data!.docs
+                            .map((DocumentSnapshot document) {
+                          Map<String, dynamic> data =
+                              document.data()! as Map<String, dynamic>;
+                          return TransferDetails(
+                              timeStamp: data["timeStamp"], id: data["to"]);
+                        }).toList(),
+                      );
+                    })),
             const SizedBox(height: 20),
             PageTitle(heading: "Amount"),
             const SizedBox(height: 20),
             SizedBox(
               width: MediaQuery.of(context).size.width - 30,
-              height: 400,
+              height: 200,
               child: Card(
                 borderOnForeground: true,
                 child: Column(
@@ -102,10 +101,23 @@ class _TransferState extends State<Transfer> {
                         keyboardType: TextInputType.number,
                         onChanged: (val) {
                           if (int.parse(val) <= 5000) {
-                            charge = 500;
+                            setState(() {
+                              charge = 100;
+                            });
+                            return;
                           }
-                          if (int.parse(val) <= 5000) {
-                            charge = 500;
+                          if (int.parse(val) <= 100000) {
+                            setState(() {
+                              charge = 500;
+                            });
+
+                            return;
+                          }
+                          if (int.parse(val) <= 500000) {
+                            setState(() {
+                              charge = 2000;
+                            });
+                            return;
                           }
                         },
                         decoration: InputDecoration(
@@ -117,8 +129,9 @@ class _TransferState extends State<Transfer> {
                       ),
                     ),
                     SizedBox(height: 20),
-                    const Text("Transaction Cost"),
+                    const Text("Transaction Cost:"),
                     SizedBox(height: 20),
+                    Text("$charge ugx"),
                   ],
                 ),
               ),

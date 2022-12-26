@@ -1,6 +1,8 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
+import 'package:is_first_run/is_first_run.dart';
 import 'package:localstorage/localstorage.dart';
 import 'package:web3dart/crypto.dart';
 import 'package:web3dart/web3dart.dart';
@@ -13,7 +15,7 @@ class EthUtils {
   final tetherAddress = dotenv.env["TETHER_SEPOLIA_ADDRESS"];
   final gencoinAddress = dotenv.env["GENCOIN_SEPOLIA_ADDRESS"];
 
-  void initialSetup() {
+  void initialSetup() async {
     httpClient = http.Client();
     String infura =
         "https://sepolia.infura.io/v3/${dotenv.env["INFURA_API_KEY"]}";
@@ -80,7 +82,7 @@ class EthUtils {
       // ignore: unnecessary_this
       this.storage.setItem("userAddress", "0x${e.data?.substring(26)}");
     });
-    await callMainSafe("checkEmail", [email]);
+    await Future.delayed(const Duration(seconds: 5));
   }
 
   Future<String> callUserContact(

@@ -2,12 +2,8 @@ import 'package:blocksafe_mobile_app/Pages/Transfer.dart';
 import 'package:blocksafe_mobile_app/Pages/home.dart';
 import 'package:blocksafe_mobile_app/Pages/market_place.dart';
 import 'package:blocksafe_mobile_app/Pages/profile.dart';
-import 'package:blocksafe_mobile_app/Services/database.dart';
 import 'package:blocksafe_mobile_app/styles/colors.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 
 class NavBar extends StatefulWidget {
   const NavBar({super.key});

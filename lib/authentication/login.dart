@@ -1,7 +1,7 @@
 import 'package:blocksafe_mobile_app/Services/auth.dart';
+import 'package:blocksafe_mobile_app/Services/eth_utils.dart';
 import 'package:blocksafe_mobile_app/authentication/register.dart';
 import 'package:blocksafe_mobile_app/authentication/verify_email.dart';
-import 'package:blocksafe_mobile_app/authentication/verify_phone_number.dart';
 import "package:flutter/material.dart";
 import '../Widgets/circle_painter.dart';
 import "../Widgets/input.dart";
@@ -16,11 +16,13 @@ class Login extends StatefulWidget {
 class _LoginState extends State<Login> {
   final AuthService _auth = AuthService();
   final _formKey = GlobalKey<FormState>();
-
+  final EthUtils _ethUtils = EthUtils();
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
+
   @override
   Widget build(BuildContext context) {
+    _ethUtils.initialSetup();
     return Scaffold(
       backgroundColor: const Color.fromRGBO(178, 216, 230, 1),
       body: SafeArea(
@@ -70,12 +72,12 @@ class _LoginState extends State<Login> {
                         child: ElevatedButton(
                             onPressed: () async {
                               if (_formKey.currentState!.validate()) {
-                                await _auth
+                                var value = await _auth
                                     .signInWithEmailAndPassword(
                                         emailController.text,
                                         passwordController.text)
                                     .then((value) {
-                                  if (value != null) {
+                                  if (value == null) {
                                     Navigator.push(
                                         context,
                                         MaterialPageRoute(

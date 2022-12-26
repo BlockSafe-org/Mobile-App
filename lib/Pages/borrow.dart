@@ -19,10 +19,8 @@ class _BorrowState extends State<Borrow> {
 
   @override
   Widget build(BuildContext context) {
-    Stream<QuerySnapshot> _userStake = FirebaseFirestore.instance
-        .collection('transactions')
-        .where("transactionName", isEqualTo: "borrow")
-        .snapshots();
+    Stream<QuerySnapshot> _userBorrow =
+        FirebaseFirestore.instance.collection('borrow').snapshots();
     return SafeArea(
         child: Scaffold(
       backgroundColor: AppColor.mainColor,
@@ -99,20 +97,40 @@ class _BorrowState extends State<Borrow> {
               const SizedBox(height: 40),
               const Text("Pending debts:"),
               SizedBox(
-                  width: MediaQuery.of(context).size.width - 20,
-                  height: 500,
-                  child: ListView.builder(itemBuilder: (context, index) {
-                    return BorrowDetails(
-                        transactionName: "Borrow",
-                        timeStamp: DateTime.now().microsecondsSinceEpoch,
-                        transactionHash:
-                            "0xa90ce9f2569dce56c55a5fe0a764ca4b675e1b586a3617546651df427c18e9da",
-                        rate: 1.5,
-                        cost: 3000,
-                        dateOfUnstake: DateTime.now()
-                            .add(const Duration(days: 30))
-                            .microsecondsSinceEpoch);
-                  }))
+                width: MediaQuery.of(context).size.width - 20,
+                height: 500,
+                child: StreamBuilder<QuerySnapshot>(
+                  stream: _userBorrow,
+                  builder: (BuildContext context,
+                      AsyncSnapshot<QuerySnapshot> snapshot) {
+                    if (snapshot.hasError) {
+                      return Text('Something went wrong');
+                    }
+
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return Center(child: CircularProgressIndicator());
+                    }
+
+                    if (snapshot.data!.docs.isEmpty) {
+                      return const Center(child: Text("No data Available"));
+                    }
+                    return ListView(
+                      children:
+                          snapshot.data!.docs.map((DocumentSnapshot document) {
+                        Map<String, dynamic> data =
+                            document.data()! as Map<String, dynamic>;
+                        return BorrowDetails(
+                            transactionName: data["transactionName"],
+                            timeStamp: data["timeStamp"],
+                            transactionHash: data["transactionHash"],
+                            rate: data["interest"],
+                            cost: data["transactionCost"],
+                            dateOfUnstake: data["dataOfUnstake"]);
+                      }).toList(),
+                    );
+                  },
+                ),
+              )
             ]),
       ),
     ));

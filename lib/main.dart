@@ -1,4 +1,5 @@
 import 'package:blocksafe_mobile_app/Pages/home.dart';
+import 'package:blocksafe_mobile_app/Services/provider_widget.dart';
 import 'package:blocksafe_mobile_app/Splashscreens/screen_one.dart';
 import 'package:blocksafe_mobile_app/Widgets/Navigation/navigationbar.dart';
 import 'package:blocksafe_mobile_app/Widgets/wrapper.dart';
@@ -8,6 +9,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:is_first_run/is_first_run.dart';
+import 'package:provider/provider.dart';
 
 import 'Pages/loading.dart';
 
@@ -29,14 +31,14 @@ class BlockSafe extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-        debugShowCheckedModeBanner: false,
-        initialRoute: isRun ? "/start" : "/",
-        routes: {
-          "/": (context) => Wrapper(),
-          "/home": (context) => Home(),
-          "/navigation": (context) => const NavBar(),
-          "/start": (context) => const ScreenOne(),
-        });
+    return ProviderState(
+      child: MaterialApp(
+          debugShowCheckedModeBanner: false,
+          initialRoute: isRun ? "/start" : "/",
+          routes: {
+            "/": (context) => Wrapper(),
+            "/start": (context) => const ScreenOne(),
+          }),
+    );
   }
 }

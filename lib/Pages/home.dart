@@ -5,33 +5,26 @@ import 'package:blocksafe_mobile_app/Pages/loading.dart';
 import 'package:blocksafe_mobile_app/Pages/stake.dart';
 import 'package:blocksafe_mobile_app/Pages/topup.dart';
 import 'package:blocksafe_mobile_app/Pages/withdraw.dart';
+import 'package:blocksafe_mobile_app/Services/eth_utils.dart';
 import 'package:blocksafe_mobile_app/Widgets/title.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import "package:flutter/material.dart";
 import 'package:localstorage/localstorage.dart';
 import 'package:web3dart/web3dart.dart';
-import '../Services/eth_utils.dart';
 import '../Widgets/balance.dart';
 import '../Widgets/card_function.dart';
 import "../styles/colors.dart";
+import '../Services/provider_widget.dart';
 import 'package:http/http.dart' as http;
 
 class Home extends StatelessWidget {
   Home({super.key});
-  final EthUtils _ethUtils = EthUtils();
   final LocalStorage storage = LocalStorage("userAddress");
-  late List<dynamic> balances;
-  late dynamic _balance = null;
-
-  Future<void> initState() async {
-    _ethUtils.initialSetup();
-    await _ethUtils.getUserContract(FirebaseAuth.instance.currentUser!.email!);
-    await storage.ready;
-    balances = await _ethUtils.loadBalances();
-    //print(storage.getItem("userAddress"));
-    await convert();
-  }
+  List<dynamic> balances = [0, 0];
+  final EthUtils _ethUtils = EthUtils();
+  // ignore: avoid_init_to_null
+  dynamic _balance = null;
 
   Future<void> convert() async {
     var val = EtherAmount.fromUnitAndValue(EtherUnit.wei, balances[0]);
@@ -42,12 +35,22 @@ class Home extends StatelessWidget {
     _balance = val.getInEther.toInt() * data["rates"]["UGX"];
   }
 
+  Future<void> initial() async {
+    if (_balance == null) {
+      _ethUtils.initialSetup();
+      await _ethUtils
+          .getUserContract(FirebaseAuth.instance.currentUser!.email!);
+      balances = await _ethUtils.loadBalances();
+      await convert();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final Stream<QuerySnapshot> _userTxns =
         FirebaseFirestore.instance.collection('transactions').snapshots();
     return FutureBuilder(
-        future: initState(),
+        future: initial(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.done) {
             if (snapshot.hasError) {
@@ -57,6 +60,14 @@ class Home extends StatelessWidget {
                 backgroundColor: AppColor.mainColor,
               );
             }
+            void setVariables() {
+              Provider.of(context).setBalance(_balance);
+              Provider.of(context).setBalances(balances);
+              Provider.of(context).setStorage(storage);
+              print(Provider.of(context).balances);
+            }
+
+            setVariables();
             return Scaffold(
                 backgroundColor: AppColor.mainColor,
                 body: SingleChildScrollView(
@@ -86,8 +97,7 @@ class Home extends StatelessWidget {
                                   Navigator.push(
                                       context,
                                       MaterialPageRoute(
-                                          builder: (context) =>
-                                              Stake(balance: _balance)));
+                                          builder: (context) => Stake()));
                                 }),
                             CardFunction(
                               icon: Icons.arrow_downward,
@@ -106,8 +116,7 @@ class Home extends StatelessWidget {
                                 Navigator.push(
                                     context,
                                     MaterialPageRoute(
-                                        builder: (context) =>
-                                            Withdraw(balance: _balance)));
+                                        builder: (context) => Withdraw()));
                               },
                             )
                           ],
@@ -120,10 +129,7 @@ class Home extends StatelessWidget {
                           children: <Widget>[
                             Balance(
                               imageLink: "assets/images/Icons/tether.png",
-                              balance: snapshot.connectionState !=
-                                      ConnectionState.done
-                                  ? "Loading.."
-                                  : "${_balance} Ugx",
+                              balance: "$_balance Ugx",
                             ),
                             Balance(
                               imageLink: "assets/images/Icons/gencoin.png",
@@ -173,7 +179,7 @@ class Home extends StatelessWidget {
                       ]),
                 ));
           }
-          return Loading();
+          return const Loading();
         });
   }
 }

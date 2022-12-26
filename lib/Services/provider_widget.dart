@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:localstorage/localstorage.dart';
 
 class ProviderState extends StatefulWidget {
   final Widget child;
@@ -9,30 +10,45 @@ class ProviderState extends StatefulWidget {
 }
 
 class _ProviderStateState extends State<ProviderState> {
-  var userContractAddress = "";
+  late LocalStorage storage = LocalStorage("userAddress");
+  List<dynamic> balances = [];
+  late dynamic balance = null;
+  late BuildContext buildContext;
 
-  void setUserAddress(String userAddress) {
-    setState(() {
-      userContractAddress = userAddress;
-    });
+  void setStorage(LocalStorage storage) {
+    storage = storage;
+  }
+
+  void setBalances(List<dynamic> balances) {
+    balances = balances;
+  }
+
+  void setBalance(dynamic balance) {
+    balance = balance;
   }
 
   @override
   Widget build(BuildContext context) => Provider(
       stateWidget: this,
-      userContractAddress: userContractAddress,
+      storage: storage,
+      balances: balances,
+      balance: balance,
       child: widget.child);
 }
 
 class Provider extends InheritedWidget {
-  final userContractAddress;
   final _ProviderStateState stateWidget;
+  List<dynamic> balances;
+  LocalStorage storage;
+  dynamic balance;
 
   Provider(
       {required Widget child,
       required this.stateWidget,
-      required this.userContractAddress,
-      Key? key})
+      Key? key,
+      required this.balances,
+      required this.balance,
+      required this.storage})
       : super(key: key, child: child);
 
   @override

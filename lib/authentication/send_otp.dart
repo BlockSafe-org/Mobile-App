@@ -1,7 +1,4 @@
 import 'dart:async';
-import 'dart:math';
-
-import 'package:blocksafe_mobile_app/Services/auth.dart';
 import 'package:blocksafe_mobile_app/Services/database.dart';
 import 'package:blocksafe_mobile_app/Services/eth_utils.dart';
 import 'package:blocksafe_mobile_app/Widgets/Navigation/navigationbar.dart';
@@ -26,14 +23,9 @@ class _SendOTPState extends State<SendOTP> {
   final EthUtils _ethUtils = EthUtils();
   bool loading = false;
 
-  void initState() {
-    _ethUtils.initialSetup();
-    super.initState();
-  }
-
   @override
   Widget build(BuildContext context) {
-    print(widget.verId);
+    _ethUtils.initialSetup();
     return Scaffold(
         backgroundColor: const Color.fromRGBO(178, 216, 230, 1),
         body: SafeArea(
@@ -120,28 +112,28 @@ class _SendOTPState extends State<SendOTP> {
                                     PhoneAuthProvider.credential(
                                         verificationId: widget.verId!,
                                         smsCode: codeController.text);
-                                User? _user = FirebaseAuth.instance.currentUser;
-                                String _txn =
-                                    await _ethUtils.addUser(_user!.email!);
-                                await DatabaseService(uid: _user.uid)
-                                    .addTransaction(
-                                  _user.email!,
-                                  _txn,
-                                  DateTime.now().microsecondsSinceEpoch,
-                                  "Creation",
-                                  0,
-                                );
                                 await FirebaseAuth.instance.currentUser!
                                     .updatePhoneNumber(credential)
-                                    .then((value) {
-                                  setState(() {
-                                    loading = false;
+                                    .then((value) async {
+                                  User? _user =
+                                      FirebaseAuth.instance.currentUser;
+                                  String _txn =
+                                      await _ethUtils.addUser(_user!.email!);
+                                  await DatabaseService(uid: _user.uid)
+                                      .addTransaction(
+                                    _user.email!,
+                                    _txn,
+                                    DateTime.now().microsecondsSinceEpoch,
+                                    "Creation",
+                                    0,
+                                  )
+                                      .then((value) {
+                                    Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                            builder: ((context) =>
+                                                const NavBar())));
                                   });
-                                  Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                          builder: ((context) =>
-                                              const NavBar())));
                                 });
                               },
                               child: Center(

@@ -2,12 +2,11 @@ import 'package:blocksafe_mobile_app/Models/stakeDetails.dart';
 import 'package:blocksafe_mobile_app/Models/stakePeriod.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-
+import '../Services/provider_widget.dart';
 import '../styles/colors.dart';
 
 class Stake extends StatefulWidget {
-  Stake({super.key, required this.balance});
-  dynamic balance;
+  Stake({super.key});
   late double interest;
   late int dateOfUnstake;
 
@@ -21,10 +20,8 @@ class _StakeState extends State<Stake> {
 
   @override
   Widget build(BuildContext context) {
-    Stream<QuerySnapshot> _userStake = FirebaseFirestore.instance
-        .collection('transactions')
-        .where("transactionName", isEqualTo: "stake")
-        .snapshots();
+    Stream<QuerySnapshot> _userStake =
+        FirebaseFirestore.instance.collection('stake').snapshots();
     return SafeArea(
         child: Scaffold(
       backgroundColor: AppColor.mainColor,
@@ -53,8 +50,9 @@ class _StakeState extends State<Stake> {
                         height: 60,
                         child: TextFormField(
                           validator: (val) {
-                            if (int.parse(val!) > widget.balance) {
-                              return "You cannot stake more than ${widget.balance}";
+                            if (int.parse(val!) >
+                                Provider.of(context).balance) {
+                              return "You cannot stake more than ${Provider.of(context).balance}";
                             }
                             if (int.parse(val) <= 1000) {
                               return "You cannot stake less than 1000 ugx";
@@ -122,7 +120,9 @@ class _StakeState extends State<Stake> {
                     width: MediaQuery.of(context).size.width - 50,
                     height: 50,
                     child: Card(
-                        child: Center(child: Text("${widget.balance} ugx")))),
+                        child: Center(
+                            child:
+                                Text("${Provider.of(context).balance} ugx")))),
               ),
               SizedBox(height: 40),
               SizedBox(
@@ -141,20 +141,40 @@ class _StakeState extends State<Stake> {
               SizedBox(height: 40),
               Text("Transactions"),
               SizedBox(
-                  width: MediaQuery.of(context).size.width - 20,
-                  height: 500,
-                  child: ListView.builder(itemBuilder: (context, index) {
-                    return StakeDetails(
-                        transactionName: "Stake",
-                        timeStamp: DateTime.now().microsecondsSinceEpoch,
-                        transactionHash:
-                            "0xa90ce9f2569dce56c55a5fe0a764ca4b675e1b586a3617546651df427c18e9da",
-                        rate: 12.5,
-                        cost: 3000,
-                        dateOfUnstake: DateTime.now()
-                            .add(const Duration(days: 30))
-                            .microsecondsSinceEpoch);
-                  }))
+                width: MediaQuery.of(context).size.width - 20,
+                height: 500,
+                child: StreamBuilder<QuerySnapshot>(
+                  stream: _userStake,
+                  builder: (BuildContext context,
+                      AsyncSnapshot<QuerySnapshot> snapshot) {
+                    if (snapshot.hasError) {
+                      return Text('Something went wrong');
+                    }
+
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return Center(child: CircularProgressIndicator());
+                    }
+
+                    if (snapshot.data!.docs.isEmpty) {
+                      return const Center(child: Text("No data Available"));
+                    }
+                    return ListView(
+                      children:
+                          snapshot.data!.docs.map((DocumentSnapshot document) {
+                        Map<String, dynamic> data =
+                            document.data()! as Map<String, dynamic>;
+                        return StakeDetails(
+                            transactionName: data["transactionName"],
+                            timeStamp: data["timeStamp"],
+                            transactionHash: data["transactionHash"],
+                            rate: data["interest"],
+                            cost: data["transactionCost"],
+                            dateOfUnstake: data["dateOfUnstake"]);
+                      }).toList(),
+                    );
+                  },
+                ),
+              )
             ]),
       ),
     ));

@@ -1,17 +1,18 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:localstorage/localstorage.dart';
 import '../Widgets/Navigation/navigationbar.dart';
 
 class AuthService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
+  final LocalStorage _storage = LocalStorage("userAddress");
 
   // Sign in with email and password
   Future signInWithEmailAndPassword(String email, String password) async {
     try {
       UserCredential result = await _auth.signInWithEmailAndPassword(
           email: email, password: password);
-      User? user = result.user;
-      return user;
+      return null;
     } catch (e) {
       return e;
     }
@@ -48,9 +49,7 @@ class AuthService {
     try {
       UserCredential result = await _auth.createUserWithEmailAndPassword(
           email: email, password: password);
-      User? user = result.user;
-
-      return user;
+      return null;
     } catch (e) {
       return e;
     }
@@ -59,6 +58,8 @@ class AuthService {
   Future logout() async {
     try {
       await _auth.signOut();
+      await _storage.ready;
+      _storage.deleteItem("userAddress");
     } catch (e) {
       return null;
     }
