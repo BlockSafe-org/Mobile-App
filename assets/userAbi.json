@@ -40,6 +40,19 @@
         "type": "uint256"
       }
     ],
+    "name": "AmountInDebt",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "amount",
+        "type": "uint256"
+      }
+    ],
     "name": "Deposit",
     "type": "event"
   },
@@ -108,12 +121,6 @@
         "internalType": "uint256",
         "name": "amount",
         "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "internalType": "string",
-        "name": "_email",
-        "type": "string"
       }
     ],
     "name": "UnstakeTokens",
@@ -140,12 +147,6 @@
         "internalType": "uint256",
         "name": "amount",
         "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "internalType": "string",
-        "name": "_email",
-        "type": "string"
       }
     ],
     "name": "stakeToken",
@@ -185,19 +186,6 @@
     ],
     "name": "borrowTokens",
     "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "checkBalance",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
     "stateMutability": "nonpayable",
     "type": "function"
   },
@@ -265,6 +253,11 @@
         "type": "uint256"
       },
       {
+        "internalType": "uint256",
+        "name": "charge",
+        "type": "uint256"
+      },
+      {
         "internalType": "address",
         "name": "receiverAddress",
         "type": "address"
@@ -285,6 +278,11 @@
       {
         "internalType": "uint256",
         "name": "amount",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "charge",
         "type": "uint256"
       },
       {
