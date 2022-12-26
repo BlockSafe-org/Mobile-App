@@ -1,4 +1,3 @@
-import 'package:blocksafe_mobile_app/authentication/signup.dart';
 import "package:flutter/material.dart";
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:is_first_run/is_first_run.dart';

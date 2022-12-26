@@ -1,4 +1,4 @@
-import 'package:blocksafe_mobile_app/authentication/signup.dart';
+import 'package:blocksafe_mobile_app/authentication/register.dart';
 import 'package:flutter/material.dart';
 import '../Widgets/rectangle_painter.dart';
 
@@ -43,7 +43,7 @@ class ScreenSix extends StatelessWidget {
                       Navigator.push(
                           context,
                           MaterialPageRoute(
-                              builder: (context) => const SignUp()));
+                              builder: (context) => const Register()));
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color.fromRGBO(12, 115, 254, 1),

@@ -6,14 +6,14 @@ import 'package:blocksafe_mobile_app/authentication/verify_email.dart';
 import 'package:flutter/material.dart';
 import '../Widgets/circle_painter.dart';
 
-class SignUp extends StatefulWidget {
-  const SignUp({super.key});
+class Register extends StatefulWidget {
+  const Register({super.key});
 
   @override
-  State<SignUp> createState() => _SignUpState();
+  State<Register> createState() => _RegisterState();
 }
 
-class _SignUpState extends State<SignUp> {
+class _RegisterState extends State<Register> {
   final EthUtils _ethUtils = EthUtils();
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
@@ -39,7 +39,7 @@ class _SignUpState extends State<SignUp> {
           ),
           const Positioned(
             top: 120,
-            child: Text("Sign Up",
+            child: Text("Register",
                 style: TextStyle(
                     color: Colors.white,
                     fontSize: 60,

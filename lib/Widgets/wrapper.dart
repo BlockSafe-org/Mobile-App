@@ -1,7 +1,7 @@
 import 'package:blocksafe_mobile_app/Pages/loading.dart';
 import 'package:blocksafe_mobile_app/Services/auth.dart';
 import 'package:blocksafe_mobile_app/Widgets/Navigation/navigationbar.dart';
-import 'package:blocksafe_mobile_app/authentication/signup.dart';
+import 'package:blocksafe_mobile_app/authentication/register.dart';
 import 'package:blocksafe_mobile_app/authentication/verify_email.dart';
 import 'package:blocksafe_mobile_app/authentication/verify_phone_number.dart';
 import 'package:flutter/material.dart';
@@ -37,7 +37,7 @@ class _WrapperState extends State<Wrapper> {
               }
               return VerifyEmail();
             }
-            return const SignUp();
+            return const Register();
           }
           return const Loading();
         });

@@ -1,5 +1,5 @@
 import 'package:blocksafe_mobile_app/Services/auth.dart';
-import 'package:blocksafe_mobile_app/authentication/signup.dart';
+import 'package:blocksafe_mobile_app/authentication/register.dart';
 import 'package:blocksafe_mobile_app/authentication/verify_email.dart';
 import 'package:blocksafe_mobile_app/authentication/verify_phone_number.dart';
 import "package:flutter/material.dart";
@@ -103,7 +103,7 @@ class _LoginState extends State<Login> {
                           Navigator.push(
                               context,
                               MaterialPageRoute(
-                                  builder: (context) => const SignUp()));
+                                  builder: (context) => const Register()));
                         },
                         child: Column(
                           children: const [

@@ -1,14 +1,26 @@
+import 'dart:io';
+
 import 'package:blocksafe_mobile_app/Models/transferDetails.dart';
 import 'package:blocksafe_mobile_app/Widgets/title.dart';
 import 'package:blocksafe_mobile_app/styles/colors.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
-class Transfer extends StatelessWidget {
+class Transfer extends StatefulWidget {
   Transfer({super.key});
+
+  @override
+  State<Transfer> createState() => _TransferState();
+}
+
+class _TransferState extends State<Transfer> {
   final TextEditingController transferController = TextEditingController();
+
   final TextEditingController addressController = TextEditingController();
+
   final TextEditingController messageController = TextEditingController();
+
+  late int charge;
 
   @override
   Widget build(BuildContext context) {
@@ -77,18 +89,38 @@ class Transfer extends StatelessWidget {
             PageTitle(heading: "Amount"),
             const SizedBox(height: 20),
             SizedBox(
-              width: MediaQuery.of(context).size.width - 20,
-              child: TextFormField(
-                keyboardType: TextInputType.number,
-                decoration: InputDecoration(
-                    filled: true,
-                    fillColor: Colors.white,
-                    enabledBorder: OutlineInputBorder(
-                        borderSide: const BorderSide(color: Colors.black),
-                        borderRadius: BorderRadius.circular(10)),
-                    focusColor: Colors.white,
-                    hintText: "Amount"),
-                controller: transferController,
+              width: MediaQuery.of(context).size.width - 30,
+              height: 400,
+              child: Card(
+                borderOnForeground: true,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    SizedBox(
+                      width: MediaQuery.of(context).size.width - 10,
+                      child: TextFormField(
+                        keyboardType: TextInputType.number,
+                        onChanged: (val) {
+                          if (int.parse(val) <= 5000) {
+                            charge = 500;
+                          }
+                          if (int.parse(val) <= 5000) {
+                            charge = 500;
+                          }
+                        },
+                        decoration: InputDecoration(
+                            filled: true,
+                            fillColor: Colors.white,
+                            focusColor: Colors.white,
+                            hintText: "Amount"),
+                        controller: transferController,
+                      ),
+                    ),
+                    SizedBox(height: 20),
+                    const Text("Transaction Cost"),
+                    SizedBox(height: 20),
+                  ],
+                ),
               ),
             ),
             const SizedBox(height: 20),
