@@ -202,6 +202,20 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "2.0.1"
+  flutter_paystack:
+    dependency: "direct main"
+    description:
+      name: flutter_paystack
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "1.0.6"
+  flutter_paystack_client:
+    dependency: "direct main"
+    description:
+      name: flutter_paystack_client
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "0.1.1"
   flutter_spinkit:
     dependency: "direct main"
     description:

@@ -1,12 +1,18 @@
 import 'package:blocksafe_mobile_app/Models/stakeDetails.dart';
 import 'package:blocksafe_mobile_app/Models/stakePeriod.dart';
+import 'package:blocksafe_mobile_app/Services/auth.dart';
+import 'package:blocksafe_mobile_app/Services/database.dart';
+import 'package:blocksafe_mobile_app/Services/eth_utils.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import '../Services/provider_widget.dart';
 import '../styles/colors.dart';
 
 class Stake extends StatefulWidget {
-  Stake({super.key});
+  Stake({super.key, required this.balance});
+  double balance;
   late double interest;
   late int dateOfUnstake;
 
@@ -17,9 +23,12 @@ class Stake extends StatefulWidget {
 class _StakeState extends State<Stake> {
   String _amount = "0";
   final _formKey = GlobalKey<FormState>();
+  EthUtils _ethUtils = EthUtils();
+  User _user = FirebaseAuth.instance.currentUser!;
 
   @override
   Widget build(BuildContext context) {
+    _ethUtils.initialSetup();
     Stream<QuerySnapshot> _userStake =
         FirebaseFirestore.instance.collection('stake').snapshots();
     return SafeArea(
@@ -50,12 +59,16 @@ class _StakeState extends State<Stake> {
                         height: 60,
                         child: TextFormField(
                           validator: (val) {
-                            if (int.parse(val!) >
-                                Provider.of(context).balance) {
-                              return "You cannot stake more than ${Provider.of(context).balance}";
+                            if (int.parse(val!) > widget.balance) {
+                              return "You cannot stake more than ${widget.balance}";
                             }
                             if (int.parse(val) <= 1000) {
                               return "You cannot stake less than 1000 ugx";
+                            }
+
+                            // ignore: unnecessary_null_comparison
+                            if (widget.interest == null) {
+                              return "You need to select a stake period.";
                             }
                             return null;
                           },
@@ -120,26 +133,41 @@ class _StakeState extends State<Stake> {
                     width: MediaQuery.of(context).size.width - 50,
                     height: 50,
                     child: Card(
-                        child: Center(
-                            child:
-                                Text("${Provider.of(context).balance} ugx")))),
+                        child: Center(child: Text("${widget.balance} ugx")))),
               ),
               SizedBox(height: 40),
               SizedBox(
                   width: MediaQuery.of(context).size.width - 70,
                   height: 50,
                   child: ElevatedButton(
-                    onPressed: () {
+                    onPressed: () async {
                       if (_formKey.currentState!.validate()) {
-                        print(_amount);
+                        try {
+                          print(widget.interest);
+                          print(widget.dateOfUnstake);
+                          // String _txn = await _ethUtils.userStake(context,
+                          //     int.parse(_amount),
+                          //     _user.email!);
+                          // await DatabaseService(
+                          //         uid: _user.uid)
+                          //     .addStakeTransaction(
+                          //         _txn,
+                          //         DateTime.now().microsecondsSinceEpoch,
+                          //         "Stake",
+                          //         int.parse(_amount),
+                          //         widget.interest,
+                          //         widget.dateOfUnstake);
+                        } catch (e) {
+                          print(e);
+                        }
                       }
                     },
                     style: ElevatedButton.styleFrom(
                         backgroundColor: AppColor.backgroundColor),
                     child: const Text("Confirm"),
                   )),
-              SizedBox(height: 40),
-              Text("Transactions"),
+              const SizedBox(height: 40),
+              const Text("Transactions"),
               SizedBox(
                 width: MediaQuery.of(context).size.width - 20,
                 height: 500,

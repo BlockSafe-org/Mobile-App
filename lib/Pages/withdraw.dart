@@ -6,7 +6,8 @@ import '../Models/borrowDetails.dart';
 import '../styles/colors.dart';
 
 class Withdraw extends StatefulWidget {
-  Withdraw({super.key});
+  Withdraw({super.key, required this.balance});
+  double balance;
   String _amount = "0";
   final _formKey = GlobalKey<FormState>();
 
@@ -46,9 +47,8 @@ class _WithdrawState extends State<Withdraw> {
                         height: 60,
                         child: TextFormField(
                           validator: (val) {
-                            if (int.parse(val!) >
-                                Provider.of(context).balance) {
-                              return "You cannot withdraw more than ${Provider.of(context).balance}";
+                            if (int.parse(val!) > widget.balance) {
+                              return "You cannot withdraw more than ${widget.balance}";
                             }
                             if (int.parse(val) <= 1000) {
                               return "You cannot withdraw less than 1000 ugx";
@@ -79,9 +79,7 @@ class _WithdrawState extends State<Withdraw> {
                     width: MediaQuery.of(context).size.width - 50,
                     height: 50,
                     child: Card(
-                        child: Center(
-                            child:
-                                Text("${Provider.of(context).balance} ugx")))),
+                        child: Center(child: Text("${widget.balance} ugx")))),
               ),
               const SizedBox(height: 40),
               SizedBox(

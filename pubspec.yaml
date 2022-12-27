@@ -43,7 +43,8 @@ dependencies:
   provider: ^6.0.4
   pin_code_fields: ^7.4.0
   localstorage: ^4.0.0+1
-
+  flutter_paystack: ^1.0.6
+  flutter_paystack_client: ^0.1.1
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.

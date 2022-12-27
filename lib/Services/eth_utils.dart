@@ -1,8 +1,8 @@
-import 'package:firebase_auth/firebase_auth.dart';
+import 'package:blocksafe_mobile_app/Services/provider_widget.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
-import 'package:is_first_run/is_first_run.dart';
 import 'package:localstorage/localstorage.dart';
 import 'package:web3dart/crypto.dart';
 import 'package:web3dart/web3dart.dart';
@@ -100,20 +100,50 @@ class EthUtils {
     return result;
   }
 
-  Future<String> userStake(int amount, String email) async {
+  Future<String> userStake(
+      BuildContext context, int amount, String email) async {
     DeployedContract _userContract = await getContract(
         "assets/userAbi.json", "User", storage.getItem("userAddress"));
-    String txnHash = await callUserContact("stakeTokens", [amount, email]);
-    final ContractEvent event = _userContract.event("ShowContractAddress");
+    String txnHash = await callUserContact("UnstakeTokens", [amount, email]);
+    final ContractEvent event = _userContract.event("stakeToken");
+    FilterOptions options = FilterOptions(
+      address: _userContract.address,
+      fromBlock: const BlockNum.genesis(),
+      toBlock: const BlockNum.current(),
+      topics: [
+        [bytesToHex(event.signature, padToEvenLength: true, include0x: true)],
+      ],
+    );
+    var events = web3Client.events(options);
+    events.listen((e) {
+      var stakevalue = hexToBytes(e.data!);
+      print(stakevalue);
+      Provider.of(context).setStakeBalance(stakevalue[0]);
+    });
     await Future.delayed(const Duration(seconds: 5));
     return txnHash;
   }
 
-  Future<String> userUnstake(int amount, String email) async {
+  Future<String> userUnstake(
+      BuildContext context, int amount, String email) async {
     DeployedContract _userContract = await getContract(
         "assets/userAbi.json", "User", storage.getItem("userAddress"));
     String txnHash = await callUserContact("unstakeTokens", [amount, email]);
-    final ContractEvent event = _userContract.event("ShowContractAddress");
+    final ContractEvent event = _userContract.event("stakeToken");
+    FilterOptions options = FilterOptions(
+      address: _userContract.address,
+      fromBlock: const BlockNum.genesis(),
+      toBlock: const BlockNum.current(),
+      topics: [
+        [bytesToHex(event.signature, padToEvenLength: true, include0x: true)],
+      ],
+    );
+    var events = web3Client.events(options);
+    events.listen((e) {
+      var stakevalue = hexToBytes(e.data!);
+      print(stakevalue);
+      Provider.of(context).setStakeBalance(stakevalue[0]);
+    });
     await Future.delayed(const Duration(seconds: 5));
     return txnHash;
   }

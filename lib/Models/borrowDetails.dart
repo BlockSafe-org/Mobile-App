@@ -10,13 +10,11 @@ class BorrowDetails extends StatelessWidget {
     required this.transactionHash,
     required this.rate,
     required this.cost,
-    required this.dateOfUnstake,
   });
 
   String transactionName;
   String transactionHash;
   int timeStamp;
-  int dateOfUnstake;
   double cost;
   double rate;
 

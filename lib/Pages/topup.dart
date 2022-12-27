@@ -1,6 +1,8 @@
 import 'package:blocksafe_mobile_app/Models/transaction.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter_paystack_client/flutter_paystack_client.dart';
 import '../styles/colors.dart';
 
 class TopUp extends StatefulWidget {
@@ -13,7 +15,9 @@ class TopUp extends StatefulWidget {
 class _TopUpState extends State<TopUp> {
   String _amount = "0";
   final _formKey = GlobalKey<FormState>();
+  final User _user = FirebaseAuth.instance.currentUser!;
 
+  @override
   @override
   Widget build(BuildContext context) {
     Stream<QuerySnapshot> _userTopUp = FirebaseFirestore.instance
@@ -75,9 +79,17 @@ class _TopUpState extends State<TopUp> {
                   width: MediaQuery.of(context).size.width - 70,
                   height: 50,
                   child: ElevatedButton(
-                    onPressed: () {
+                    onPressed: () async {
                       if (_formKey.currentState!.validate() == true) {
-                        print(_amount);
+                        await PaystackClient.initialize(
+                            "pk_test_1d5a371a2d05d479450c6d2d785e51c4efa92cec");
+                        final charge = Charge()
+                          ..email = _user.email
+                          ..amount = int.parse(_amount)
+                          ..reference =
+                              'ref_${DateTime.now().millisecondsSinceEpoch}';
+                        final res = await PaystackClient.checkout(context,
+                            charge: charge);
                       }
                     },
                     style: ElevatedButton.styleFrom(

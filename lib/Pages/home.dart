@@ -60,14 +60,6 @@ class Home extends StatelessWidget {
                 backgroundColor: AppColor.mainColor,
               );
             }
-            void setVariables() {
-              Provider.of(context).setBalance(_balance);
-              Provider.of(context).setBalances(balances);
-              Provider.of(context).setStorage(storage);
-              print(Provider.of(context).balances);
-            }
-
-            setVariables();
             return Scaffold(
                 backgroundColor: AppColor.mainColor,
                 body: SingleChildScrollView(
@@ -97,7 +89,9 @@ class Home extends StatelessWidget {
                                   Navigator.push(
                                       context,
                                       MaterialPageRoute(
-                                          builder: (context) => Stake()));
+                                          builder: (context) => Stake(
+                                                balance: _balance,
+                                              )));
                                 }),
                             CardFunction(
                               icon: Icons.arrow_downward,
@@ -116,7 +110,8 @@ class Home extends StatelessWidget {
                                 Navigator.push(
                                     context,
                                     MaterialPageRoute(
-                                        builder: (context) => Withdraw()));
+                                        builder: (context) =>
+                                            Withdraw(balance: _balance)));
                               },
                             )
                           ],

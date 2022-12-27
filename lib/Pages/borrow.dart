@@ -1,3 +1,4 @@
+import 'package:blocksafe_mobile_app/Services/provider_widget.dart';
 import 'package:blocksafe_mobile_app/Widgets/amountInput.dart';
 import 'package:blocksafe_mobile_app/Widgets/input.dart';
 import 'package:flutter/material.dart';
@@ -49,10 +50,12 @@ class _BorrowState extends State<Borrow> {
                           height: 60,
                           child: TextFormField(
                             validator: (val) {
-                              if (int.parse(val!) > 423234) {
-                                return "You cannot borrow more than 123334 ugx";
+                              if (int.parse(val!) >
+                                  Provider.of(context).stakeBalance) {
+                                return "You cannot borrow more than ${Provider.of(context).stakeBalance} ugx";
                               }
-                              if (int.parse(val) <= 1000) {
+                              if (int.parse(val) <=
+                                  Provider.of(context).stakeBalance) {
                                 return "You cannot borrow less than 1000 ugx";
                               }
                             },
@@ -78,7 +81,10 @@ class _BorrowState extends State<Borrow> {
                 child: SizedBox(
                     width: MediaQuery.of(context).size.width - 50,
                     height: 50,
-                    child: Card(child: Center(child: Text("123,334 ugx")))),
+                    child: Card(
+                        child: Center(
+                            child: Text(
+                                "${Provider.of(context).stakeBalance} ugx")))),
               ),
               const SizedBox(height: 40),
               SizedBox(
@@ -87,7 +93,22 @@ class _BorrowState extends State<Borrow> {
                   child: ElevatedButton(
                     onPressed: () {
                       if (_formKey.currentState!.validate()) {
-                        print(_amount);
+                        try {
+                          // String _txn = await _ethUtils.userBorrow(
+                          //     int.parse(_amount),
+                          //     _user.email!);
+                          // await DatabaseService(
+                          //         uid: _user.uid)
+                          //     .addBorrowTransaction(
+                          //         _txn,
+                          //         DateTime.now().microsecondsSinceEpoch,
+                          //         "Stake",
+                          //         int.parse(_amount),
+                          //         2.5
+                          //         );
+                        } catch (e) {
+                          print(e);
+                        }
                       }
                     },
                     style: ElevatedButton.styleFrom(
@@ -120,12 +141,12 @@ class _BorrowState extends State<Borrow> {
                         Map<String, dynamic> data =
                             document.data()! as Map<String, dynamic>;
                         return BorrowDetails(
-                            transactionName: data["transactionName"],
-                            timeStamp: data["timeStamp"],
-                            transactionHash: data["transactionHash"],
-                            rate: data["interest"],
-                            cost: data["transactionCost"],
-                            dateOfUnstake: data["dataOfUnstake"]);
+                          transactionName: data["transactionName"],
+                          timeStamp: data["timeStamp"],
+                          transactionHash: data["transactionHash"],
+                          rate: data["interest"],
+                          cost: data["transactionCost"],
+                        );
                       }).toList(),
                     );
                   },
