@@ -13,8 +13,13 @@ class NavBar extends StatefulWidget {
 }
 
 class _NavBarState extends State<NavBar> {
-  int currentIndex = 2;
-  final screens = [MarketPlace(), Transfer(), Home(), const Profile()];
+  int currentIndex = 1;
+  final screens = [
+    //const SnackBar(content: Text("Coming Soon...")),
+    Transfer(),
+    Home(),
+    const Profile()
+  ];
   void onTapped(int index) {
     setState(() {
       currentIndex = index;
@@ -32,8 +37,8 @@ class _NavBarState extends State<NavBar> {
         unselectedItemColor: Colors.white,
         showUnselectedLabels: false,
         items: const [
-          BottomNavigationBarItem(
-              icon: Icon(Icons.storefront), label: "Market"),
+          // BottomNavigationBarItem(
+          //     icon: Icon(Icons.storefront), label: "Market"),
           BottomNavigationBarItem(
               icon: Icon(Icons.swap_horiz), label: "Transfer"),
           BottomNavigationBarItem(icon: Icon(Icons.home), label: "Home"),
