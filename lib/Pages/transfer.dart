@@ -20,7 +20,8 @@ class _TransferState extends State<Transfer> {
 
   final TextEditingController messageController = TextEditingController();
 
-  late int charge = 0;
+  double charge = 0;
+  String _amount = "";
 
   @override
   Widget build(BuildContext context) {
@@ -100,25 +101,11 @@ class _TransferState extends State<Transfer> {
                       child: TextFormField(
                         keyboardType: TextInputType.number,
                         onChanged: (val) {
-                          if (int.parse(val) <= 5000) {
-                            setState(() {
-                              charge = 100;
-                            });
-                            return;
-                          }
-                          if (int.parse(val) <= 100000) {
-                            setState(() {
-                              charge = 500;
-                            });
-
-                            return;
-                          }
-                          if (int.parse(val) <= 500000) {
-                            setState(() {
-                              charge = 2000;
-                            });
-                            return;
-                          }
+                          _amount = val;
+                          setState(() {
+                            charge = double.parse(val) * (10 / 100);
+                          });
+                          return;
                         },
                         decoration: InputDecoration(
                             filled: true,
@@ -132,6 +119,10 @@ class _TransferState extends State<Transfer> {
                     const Text("Transaction Cost:"),
                     SizedBox(height: 20),
                     Text("$charge ugx"),
+                    SizedBox(height: 20),
+                    const Text("Total Cost:"),
+                    SizedBox(height: 20),
+                    Text("${charge + int.parse(_amount)} ugx"),
                   ],
                 ),
               ),

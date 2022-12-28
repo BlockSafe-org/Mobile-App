@@ -47,8 +47,10 @@ class Home extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final Stream<QuerySnapshot> _userTxns =
-        FirebaseFirestore.instance.collection('transactions').snapshots();
+    final Stream<QuerySnapshot> _userTxns = FirebaseFirestore.instance
+        .collection('transactions')
+        .where("email", isEqualTo: FirebaseAuth.instance.currentUser!.email!)
+        .snapshots();
     return FutureBuilder(
         future: initial(),
         builder: (context, snapshot) {

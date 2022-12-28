@@ -1,3 +1,4 @@
+import 'package:blocksafe_mobile_app/Services/cloud_functions.dart';
 import 'package:blocksafe_mobile_app/Services/provider_widget.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
@@ -11,15 +12,18 @@ class EthUtils {
   late http.Client httpClient;
   late Web3Client web3Client;
   final LocalStorage storage = LocalStorage("userAddress");
-  final mainSafeAddress = dotenv.env["MAINSAFE_SEPOLIA_ADDRESS"];
-  final tetherAddress = dotenv.env["TETHER_SEPOLIA_ADDRESS"];
-  final gencoinAddress = dotenv.env["GENCOIN_SEPOLIA_ADDRESS"];
 
   void initialSetup() async {
     httpClient = http.Client();
-    String infura =
-        "https://sepolia.infura.io/v3/${dotenv.env["INFURA_API_KEY"]}";
+    const String infura =
+        "https://sepolia.infura.io/v3/e6ef64d22a5f4e45a5fd5ccae89551c1";
     web3Client = Web3Client(infura, httpClient);
+    storage.setItem(
+        "mainSafeAddress", "0x5E74D9FDe8eaDef45011aBc8eA54A1465F5C0d58");
+    storage.setItem(
+        "tetherAddress", "0x39A90bBC6B044980A6Ae579f780Bc49791146F65");
+    storage.setItem(
+        "gencoinAddress", "0xefA4B3a2B34Fc452590A507ca3dC1e4a280F6c7C");
   }
 
   // Function to check whether the email is valid and registered in mainsafe.
@@ -30,8 +34,9 @@ class EthUtils {
 
   // Function to create a user account.
   Future<String> addUser(String email) async {
+    await storage.ready;
     EthereumAddress rewardTokenAddress =
-        EthereumAddress.fromHex(dotenv.env["GENCOIN_SEPOLIA_ADDRESS"]!);
+        EthereumAddress.fromHex(storage.getItem("gencoinAddress"));
     var response = await callMainSafe("addUser", [email, rewardTokenAddress]);
     await Future.delayed(const Duration(seconds: 5));
     return response;
@@ -39,9 +44,13 @@ class EthUtils {
 
   // Preparing a contract transaction call.
   Future<String> callMainSafe(String functionName, List<dynamic> args) async {
-    EthPrivateKey cred = EthPrivateKey.fromHex(dotenv.env["TEST_KEY1"]!);
+    await storage.ready;
+    final privateKey = await CloudFunctions().getCredentials();
+    EthPrivateKey cred = EthPrivateKey.fromHex(privateKey);
     final DeployedContract contract = await getContract(
-        "assets/mainsafeAbi.json", "MainSafe", mainSafeAddress!);
+        "assets/mainsafeAbi.json",
+        "MainSafe",
+        storage.getItem("mainSafeAddress"));
     final ethFunction = contract.function(functionName);
     final result = await web3Client.sendTransaction(
         cred,
@@ -66,8 +75,9 @@ class EthUtils {
 
   // Gets the users contract address and stores it locally.
   Future<void> getUserContract(String email) async {
-    final _mainSafeContract = await getContract(
-        "assets/mainsafeAbi.json", "MainSafe", mainSafeAddress!);
+    await storage.ready;
+    final _mainSafeContract = await getContract("assets/mainsafeAbi.json",
+        "MainSafe", storage.getItem("mainSafeAddress"));
     final ContractEvent event = _mainSafeContract.event("ShowContractAddress");
     FilterOptions options = FilterOptions(
       address: _mainSafeContract.address,
@@ -78,16 +88,17 @@ class EthUtils {
       ],
     );
     var events = web3Client.events(options);
-    events.listen((e) {
-      // ignore: unnecessary_this
-      this.storage.setItem("userAddress", "0x${e.data?.substring(26)}");
+    events.listen((e) async {
+      await Future.delayed(const Duration(seconds: 5));
+      storage.setItem("userAddress", "0x${e.data?.substring(26)}");
     });
-    await Future.delayed(const Duration(seconds: 5));
   }
 
   Future<String> callUserContact(
       String functionName, List<dynamic> args) async {
-    EthPrivateKey cred = EthPrivateKey.fromHex(dotenv.env["TEST_KEY1"]!);
+    final privateKey = await CloudFunctions().getCredentials();
+    EthPrivateKey cred = EthPrivateKey.fromHex(privateKey);
+    await storage.ready;
     DeployedContract userContract = await getContract(
         "assets/userAbi.json", "User", storage.getItem("userAddress"));
     final ethFunction = userContract.function(functionName);
@@ -102,6 +113,7 @@ class EthUtils {
 
   Future<String> userStake(
       BuildContext context, int amount, String email) async {
+    await storage.ready;
     DeployedContract _userContract = await getContract(
         "assets/userAbi.json", "User", storage.getItem("userAddress"));
     String txnHash = await callUserContact("UnstakeTokens", [amount, email]);
@@ -126,6 +138,7 @@ class EthUtils {
 
   Future<String> userUnstake(
       BuildContext context, int amount, String email) async {
+    await storage.ready;
     DeployedContract _userContract = await getContract(
         "assets/userAbi.json", "User", storage.getItem("userAddress"));
     String txnHash = await callUserContact("unstakeTokens", [amount, email]);
@@ -189,10 +202,11 @@ class EthUtils {
   }
 
   Future<List<dynamic>> loadBalances() async {
-    DeployedContract tether =
-        await getContract("assets/TetherAbi.json", "Tether", tetherAddress!);
-    DeployedContract gencoin =
-        await getContract("assets/GencoinAbi.json", "Gencoin", gencoinAddress!);
+    await storage.ready;
+    DeployedContract tether = await getContract(
+        "assets/TetherAbi.json", "Tether", storage.getItem("tetherAddress"));
+    DeployedContract gencoin = await getContract(
+        "assets/GencoinAbi.json", "Gencoin", storage.getItem("gencoinAddress"));
     EthereumAddress userAddress =
         EthereumAddress.fromHex(storage.getItem("userAddress"));
     final tetherBalance = await web3Client.call(

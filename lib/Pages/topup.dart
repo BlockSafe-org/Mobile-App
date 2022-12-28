@@ -1,8 +1,10 @@
 import 'package:blocksafe_mobile_app/Models/transaction.dart';
+import 'package:blocksafe_mobile_app/Services/flutterwave.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter_paystack_client/flutter_paystack_client.dart';
+import 'package:flutterwave_standard/models/responses/charge_response.dart';
+//import 'package:flutter_paystack_client/flutter_paystack_client.dart';
 import '../styles/colors.dart';
 
 class TopUp extends StatefulWidget {
@@ -16,8 +18,6 @@ class _TopUpState extends State<TopUp> {
   String _amount = "0";
   final _formKey = GlobalKey<FormState>();
   final User _user = FirebaseAuth.instance.currentUser!;
-
-  @override
   @override
   Widget build(BuildContext context) {
     Stream<QuerySnapshot> _userTopUp = FirebaseFirestore.instance
@@ -30,7 +30,7 @@ class _TopUpState extends State<TopUp> {
       appBar: AppBar(
         elevation: 0,
         backgroundColor: AppColor.mainColor,
-        iconTheme: IconThemeData(
+        iconTheme: const IconThemeData(
           color: Colors.black,
         ),
         title: const Text(
@@ -81,15 +81,10 @@ class _TopUpState extends State<TopUp> {
                   child: ElevatedButton(
                     onPressed: () async {
                       if (_formKey.currentState!.validate() == true) {
-                        await PaystackClient.initialize(
-                            "pk_test_1d5a371a2d05d479450c6d2d785e51c4efa92cec");
-                        final charge = Charge()
-                          ..email = _user.email
-                          ..amount = int.parse(_amount)
-                          ..reference =
-                              'ref_${DateTime.now().millisecondsSinceEpoch}';
-                        final res = await PaystackClient.checkout(context,
-                            charge: charge);
+                        ChargeResponse response = await PaymentService()
+                            .handlePayment(context, int.parse(_amount));
+                        // ignore: use_build_context_synchronously
+                        Navigator.pop(context);
                       }
                     },
                     style: ElevatedButton.styleFrom(
