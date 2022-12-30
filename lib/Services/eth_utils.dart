@@ -88,10 +88,14 @@ class EthUtils {
       ],
     );
     var events = web3Client.events(options);
-    events.listen((e) async {
-      await Future.delayed(const Duration(seconds: 5));
-      storage.setItem("userAddress", "0x${e.data?.substring(26)}");
+    events.listen((e) {
+      if (this.storage.getItem("userAddress") == Null) {
+        this.storage.setItem("userAddress", "0x${e.data?.substring(26)}");
+      }
     });
+    if (this.storage.getItem("userAddress") == Null) {
+      await Future.delayed(Duration(seconds: 8));
+    }
   }
 
   Future<String> callUserContact(

@@ -21,7 +21,7 @@ class _TransferState extends State<Transfer> {
   final TextEditingController messageController = TextEditingController();
 
   double charge = 0;
-  String _amount = "";
+  String _amount = "0";
 
   @override
   Widget build(BuildContext context) {
