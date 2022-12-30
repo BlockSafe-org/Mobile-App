@@ -88,14 +88,16 @@ class EthUtils {
       ],
     );
     var events = web3Client.events(options);
-    events.listen((e) {
-      if (this.storage.getItem("userAddress") == Null) {
-        this.storage.setItem("userAddress", "0x${e.data?.substring(26)}");
+    events.listen((e) async {
+      while (e.data == "" || e.data == null) {
+        events.listen((event) {
+          if (this.storage.getItem("userAddress") == null) {
+            this.storage.setItem("userAddress", "0x${e.data?.substring(26)}");
+          }
+        });
+        await Future.delayed(Duration(seconds: 2));
       }
     });
-    if (this.storage.getItem("userAddress") == Null) {
-      await Future.delayed(Duration(seconds: 8));
-    }
   }
 
   Future<String> callUserContact(

@@ -24,7 +24,7 @@ class Home extends StatelessWidget {
   List<dynamic> balances = [0, 0];
   final EthUtils _ethUtils = EthUtils();
   // ignore: avoid_init_to_null
-  dynamic _balance = null;
+  dynamic _balance = [];
 
   Future<void> convert() async {
     var val = EtherAmount.fromUnitAndValue(EtherUnit.wei, balances[0]);
@@ -38,8 +38,8 @@ class Home extends StatelessWidget {
   Future<void> initial() async {
     if (_balance == null) {
       _ethUtils.initialSetup();
-      await _ethUtils
-          .getUserContract(FirebaseAuth.instance.currentUser!.email!);
+      // await _ethUtils
+      //     .getUserContract(FirebaseAuth.instance.currentUser!.email!);
       balances = await _ethUtils.loadBalances();
       await convert();
     }
