@@ -8,4 +8,10 @@ class CloudFunctions {
     final results = await callable();
     return results.data; // Private Key
   }
+
+   Future<String> getSecretKey() async {
+    HttpsCallable callable = functions.httpsCallable('flutterwaveSecretKey');
+    final results = await callable();
+    return results.data; // Private Key
+  }
 }

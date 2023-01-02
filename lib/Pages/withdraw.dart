@@ -1,8 +1,10 @@
 import 'package:blocksafe_mobile_app/Models/transaction.dart';
+import 'package:blocksafe_mobile_app/Services/flutterwave.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../Services/provider_widget.dart';
 import '../Models/borrowDetails.dart';
+import '../Widgets/Navigation/navigationbar.dart';
 import '../styles/colors.dart';
 
 class Withdraw extends StatefulWidget {
@@ -33,105 +35,110 @@ class _WithdrawState extends State<Withdraw> {
         centerTitle: true,
       ),
       body: SingleChildScrollView(
-        child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: <Widget>[
-              const SizedBox(height: 70),
-              const Text("Enter Amount To Withdraw:"),
-              const SizedBox(height: 30),
-              Center(
-                child: Form(
-                    key: widget._formKey,
-                    child: SizedBox(
-                        width: 300,
-                        height: 60,
-                        child: TextFormField(
-                          validator: (val) {
-                            if (int.parse(val!) > widget.balance) {
-                              return "You cannot withdraw more than ${widget.balance}";
-                            }
-                            if (int.parse(val) <= 1000) {
-                              return "You cannot withdraw less than 1000 ugx";
-                            }
-                            return null;
-                          },
-                          onChanged: (val) {
-                            setState(() {
-                              widget._amount = val;
-                            });
-                          },
-                          initialValue: widget._amount.toString(),
-                          keyboardType: TextInputType.number,
-                          decoration: InputDecoration(
-                              filled: true,
-                              fillColor: Colors.white,
-                              enabledBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(10)),
-                              focusColor: Colors.white,
-                              hintText: "Amount"),
-                        ))),
-              ),
-              const SizedBox(height: 40),
-              const Text("Current Balance"),
-              const SizedBox(height: 20),
-              Center(
+        child: Column(crossAxisAlignment: CrossAxisAlignment.center, children: <
+            Widget>[
+          const SizedBox(height: 70),
+          const Text("Enter Amount To Withdraw:"),
+          const SizedBox(height: 30),
+          Center(
+            child: Form(
+                key: widget._formKey,
                 child: SizedBox(
-                    width: MediaQuery.of(context).size.width - 50,
-                    height: 50,
-                    child: Card(
-                        child: Center(child: Text("${widget.balance} ugx")))),
-              ),
-              const SizedBox(height: 40),
-              SizedBox(
-                  width: MediaQuery.of(context).size.width - 70,
-                  height: 50,
-                  child: ElevatedButton(
-                    onPressed: () {
-                      if (widget._formKey.currentState!.validate()) {
-                        print(widget._amount);
-                      }
-                    },
-                    style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColor.backgroundColor),
-                    child: const Text("Confirm"),
-                  )),
-              const SizedBox(height: 40),
-              const Text("Withdraw History:"),
-              SizedBox(
-                width: MediaQuery.of(context).size.width - 20,
-                height: 500,
-                child: StreamBuilder<QuerySnapshot>(
-                  stream: _userWithdraw,
-                  builder: (BuildContext context,
-                      AsyncSnapshot<QuerySnapshot> snapshot) {
-                    if (snapshot.hasError) {
-                      return Text('Something went wrong');
-                    }
+                    width: 300,
+                    height: 60,
+                    child: TextFormField(
+                      validator: (val) {
+                        // if (int.parse(val!) > widget.balance) {
+                        //   return "You cannot withdraw more than ${widget.balance}";
+                        // }
+                        if (int.parse(val!) <= 1000) {
+                          return "You cannot withdraw less than 1000 ugx";
+                        }
+                        return null;
+                      },
+                      onChanged: (val) {
+                        setState(() {
+                          widget._amount = val;
+                        });
+                      },
+                      initialValue: widget._amount.toString(),
+                      keyboardType: TextInputType.number,
+                      decoration: InputDecoration(
+                          filled: true,
+                          fillColor: Colors.white,
+                          enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(10)),
+                          focusColor: Colors.white,
+                          hintText: "Amount"),
+                    ))),
+          ),
+          const SizedBox(height: 40),
+          const Text("Current Balance"),
+          const SizedBox(height: 20),
+          Center(
+            child: SizedBox(
+                width: MediaQuery.of(context).size.width - 50,
+                height: 50,
+                child:
+                    Card(child: Center(child: Text("${widget.balance} ugx")))),
+          ),
+          const SizedBox(height: 40),
+          SizedBox(
+              width: MediaQuery.of(context).size.width - 70,
+              height: 50,
+              child: ElevatedButton(
+                onPressed: () async {
+                  if (widget._formKey.currentState!.validate()) {
+                    dynamic result = await PaymentService()
+                        .withdraw(context, int.parse(widget._amount))
+                        .then(((value) {
+                      print(value);
+                      Navigator.push(context,
+                          MaterialPageRoute(builder: ((context) => NavBar())));
+                    }));
+                  }
+                },
+                style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColor.backgroundColor),
+                child: const Text("Confirm"),
+              )),
+          const SizedBox(height: 40),
+          const Text("Withdraw History:"),
+          SizedBox(
+            width: MediaQuery.of(context).size.width - 20,
+            height: 500,
+            child: StreamBuilder<QuerySnapshot>(
+              stream: _userWithdraw,
+              builder: (BuildContext context,
+                  AsyncSnapshot<QuerySnapshot> snapshot) {
+                if (snapshot.hasError) {
+                  return Text('Something went wrong');
+                }
 
-                    if (snapshot.connectionState == ConnectionState.waiting) {
-                      return Center(child: CircularProgressIndicator());
-                    }
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return Center(child: CircularProgressIndicator());
+                }
 
-                    if (snapshot.data!.docs.isEmpty) {
-                      return const Center(child: Text("No data Available"));
-                    }
-                    return ListView(
-                      children:
-                          snapshot.data!.docs.map((DocumentSnapshot document) {
-                        Map<String, dynamic> data =
-                            document.data()! as Map<String, dynamic>;
-                        return TransactionDetails(
-                          transactionName: data["transactionName"],
-                          timeStamp: data["timeStamp"],
-                          transactionHash: data["transactionHash"],
-                          cost: data["transactionCost"],
-                        );
-                      }).toList(),
+                if (snapshot.data!.docs.isEmpty) {
+                  return const Center(child: Text("No data Available"));
+                }
+                return ListView(
+                  children:
+                      snapshot.data!.docs.map((DocumentSnapshot document) {
+                    Map<String, dynamic> data =
+                        document.data()! as Map<String, dynamic>;
+                    return TransactionDetails(
+                      transactionName: data["transactionName"],
+                      timeStamp: data["timeStamp"],
+                      transactionHash: data["transactionHash"],
+                      cost: data["transactionCost"],
                     );
-                  },
-                ),
-              )
-            ]),
+                  }).toList(),
+                );
+              },
+            ),
+          )
+        ]),
       ),
     ));
   }

@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'package:blocksafe_mobile_app/Models/transaction.dart';
 import 'package:blocksafe_mobile_app/Pages/borrow.dart';
 import 'package:blocksafe_mobile_app/Pages/loading.dart';
@@ -11,42 +10,32 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import "package:flutter/material.dart";
 import 'package:localstorage/localstorage.dart';
-import 'package:web3dart/web3dart.dart';
 import '../Widgets/balance.dart';
 import '../Widgets/card_function.dart';
 import "../styles/colors.dart";
-import '../Services/provider_widget.dart';
-import 'package:http/http.dart' as http;
 
-class Home extends StatelessWidget {
+class Home extends StatefulWidget {
   Home({super.key});
-  final LocalStorage storage = LocalStorage("userAddress");
-  List<dynamic> balances = [0, 0];
-  final EthUtils _ethUtils = EthUtils();
-  // ignore: avoid_init_to_null
-  dynamic _balance = [];
 
-  Future<void> convert() async {
-    var val = EtherAmount.fromUnitAndValue(EtherUnit.wei, balances[0]);
-    String url =
-        'https://openexchangerates.org/api/latest.json?app_id=a0b1ffe3d063455db6f29cda92b93977&base=USD&symbols=UGX&prettyprint=false&show_alternative=false';
-    var response = await http.get(Uri.parse(url));
-    var data = jsonDecode(response.body);
-    _balance = val.getInEther.toInt() * data["rates"]["UGX"];
-  }
+  @override
+  State<Home> createState() => _HomeState();
+}
+
+class _HomeState extends State<Home> {
+  final LocalStorage storage = LocalStorage("userAddress");
+  final EthUtils _ethUtils = EthUtils();
+
+  // ignore: avoid_init_to_null
 
   Future<void> initial() async {
-    if (_balance == null) {
-      _ethUtils.initialSetup();
-      // await _ethUtils
-      //     .getUserContract(FirebaseAuth.instance.currentUser!.email!);
-      balances = await _ethUtils.loadBalances();
-      await convert();
-    }
+    _ethUtils.initialSetup();
+    await storage.ready;
+    await _ethUtils.getUserContract(FirebaseAuth.instance.currentUser!.email!);
   }
 
   @override
   Widget build(BuildContext context) {
+    setState(() {});
     final Stream<QuerySnapshot> _userTxns = FirebaseFirestore.instance
         .collection('transactions')
         .where("email", isEqualTo: FirebaseAuth.instance.currentUser!.email!)
@@ -92,7 +81,8 @@ class Home extends StatelessWidget {
                                       context,
                                       MaterialPageRoute(
                                           builder: (context) => Stake(
-                                                balance: _balance,
+                                                balance: storage
+                                                    .getItem("balances")[0],
                                               )));
                                 }),
                             CardFunction(
@@ -112,8 +102,9 @@ class Home extends StatelessWidget {
                                 Navigator.push(
                                     context,
                                     MaterialPageRoute(
-                                        builder: (context) =>
-                                            Withdraw(balance: _balance)));
+                                        builder: (context) => Withdraw(
+                                            balance: storage
+                                                .getItem("balances")[0])));
                               },
                             )
                           ],
@@ -126,12 +117,13 @@ class Home extends StatelessWidget {
                           children: <Widget>[
                             Balance(
                               imageLink: "assets/images/Icons/tether.png",
-                              balance: "$_balance Ugx",
+                              balance: "${storage.getItem("balances")[0]} Ugx",
                             ),
                             Balance(
                               imageLink: "assets/images/Icons/gencoin.png",
                               scale: 2,
-                              balance: "${balances[1]} Gencoin",
+                              balance:
+                                  "${storage.getItem("balances")[1]} Gencoin",
                             )
                           ],
                         ),

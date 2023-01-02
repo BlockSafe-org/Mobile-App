@@ -1,8 +1,8 @@
+import 'dart:convert';
 import 'package:blocksafe_mobile_app/Services/cloud_functions.dart';
 import 'package:blocksafe_mobile_app/Services/provider_widget.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 import 'package:localstorage/localstorage.dart';
 import 'package:web3dart/crypto.dart';
@@ -12,6 +12,7 @@ class EthUtils {
   late http.Client httpClient;
   late Web3Client web3Client;
   final LocalStorage storage = LocalStorage("userAddress");
+  dynamic balances;
 
   void initialSetup() async {
     httpClient = http.Client();
@@ -44,13 +45,14 @@ class EthUtils {
 
   // Preparing a contract transaction call.
   Future<String> callMainSafe(String functionName, List<dynamic> args) async {
+    String mainsafeAddress = storage.getItem("mainSafeAddress");
+    String gencoinAddress = storage.getItem("gencoinAddress");
+    String tetherAddress = storage.getItem("tetherAddress");
     await storage.ready;
     final privateKey = await CloudFunctions().getCredentials();
     EthPrivateKey cred = EthPrivateKey.fromHex(privateKey);
     final DeployedContract contract = await getContract(
-        "assets/mainsafeAbi.json",
-        "MainSafe",
-        storage.getItem("mainSafeAddress"));
+        "assets/mainsafeAbi.json", "MainSafe", mainsafeAddress);
     final ethFunction = contract.function(functionName);
     final result = await web3Client.sendTransaction(
         cred,
@@ -75,9 +77,9 @@ class EthUtils {
 
   // Gets the users contract address and stores it locally.
   Future<void> getUserContract(String email) async {
-    await storage.ready;
-    final _mainSafeContract = await getContract("assets/mainsafeAbi.json",
-        "MainSafe", storage.getItem("mainSafeAddress"));
+    String mainsafeAddress = storage.getItem("mainSafeAddress");
+    final _mainSafeContract = await getContract(
+        "assets/mainsafeAbi.json", "MainSafe", mainsafeAddress);
     final ContractEvent event = _mainSafeContract.event("ShowContractAddress");
     FilterOptions options = FilterOptions(
       address: _mainSafeContract.address,
@@ -89,15 +91,18 @@ class EthUtils {
     );
     var events = web3Client.events(options);
     events.listen((e) async {
-      while (e.data == "" || e.data == null) {
-        events.listen((event) {
-          if (this.storage.getItem("userAddress") == null) {
-            this.storage.setItem("userAddress", "0x${e.data?.substring(26)}");
-          }
-        });
-        await Future.delayed(Duration(seconds: 2));
+      if (storage.getItem("userAddress") == null) {
+        this.storage.setItem("userAddress", "0x${e.data?.substring(26)}");
+        balances = await loadBalances();
+        storage.setItem("balances", balances);
       }
     });
+    if (storage.getItem("userAddress") != null) {
+      balances = await loadBalances();
+      storage.setItem("balances", balances);
+    }
+    ;
+    await callMainSafe("checkEmail", [email]);
   }
 
   Future<String> callUserContact(
@@ -219,10 +224,17 @@ class EthUtils {
         contract: tether,
         function: tether.function("balanceOf"),
         params: [userAddress]);
+    var val = EtherAmount.fromUnitAndValue(EtherUnit.wei, tetherBalance[0]);
+    String url =
+        'https://openexchangerates.org/api/latest.json?app_id=a0b1ffe3d063455db6f29cda92b93977&base=USD&symbols=UGX&prettyprint=false&show_alternative=false';
+    var response = await http.get(Uri.parse(url));
+    var data = jsonDecode(response.body);
+    var monBalance = val.getInEther.toInt() * data["rates"]["UGX"];
+
     final gencoinBalance = await web3Client.call(
         contract: gencoin,
         function: tether.function("balanceOf"),
         params: [userAddress]);
-    return [tetherBalance[0], gencoinBalance[0]];
+    return [monBalance, gencoinBalance[0]];
   }
 }

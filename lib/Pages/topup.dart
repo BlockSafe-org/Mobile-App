@@ -1,5 +1,7 @@
 import 'package:blocksafe_mobile_app/Models/transaction.dart';
+import 'package:blocksafe_mobile_app/Pages/home.dart';
 import 'package:blocksafe_mobile_app/Services/flutterwave.dart';
+import 'package:blocksafe_mobile_app/Widgets/Navigation/navigationbar.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -83,8 +85,9 @@ class _TopUpState extends State<TopUp> {
                       if (_formKey.currentState!.validate() == true) {
                         ChargeResponse response = await PaymentService()
                             .handlePayment(context, int.parse(_amount));
-                        // ignore: use_build_context_synchronously
-                        Navigator.pop(context);
+
+                        Navigator.push(context,
+                            MaterialPageRoute(builder: (context) => NavBar()));
                       }
                     },
                     style: ElevatedButton.styleFrom(
