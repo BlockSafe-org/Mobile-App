@@ -20,11 +20,11 @@ class EthUtils {
         "https://sepolia.infura.io/v3/e6ef64d22a5f4e45a5fd5ccae89551c1";
     web3Client = Web3Client(infura, httpClient);
     storage.setItem(
-        "mainSafeAddress", "0x5E74D9FDe8eaDef45011aBc8eA54A1465F5C0d58");
+        "mainSafeAddress", "0xe2E4Ce1d83AC463A4b3A891aCf0B823E1e0ab3A0");
     storage.setItem(
-        "tetherAddress", "0x39A90bBC6B044980A6Ae579f780Bc49791146F65");
+        "tetherAddress", "0x54D35F920ede63989f983a1D8733f09f3805241E");
     storage.setItem(
-        "gencoinAddress", "0xefA4B3a2B34Fc452590A507ca3dC1e4a280F6c7C");
+        "gencoinAddress", "0xc3b1cC14b209E5002cAe60e0be4CDd4A027dd802");
   }
 
   // Function to check whether the email is valid and registered in mainsafe.
@@ -127,7 +127,7 @@ class EthUtils {
     await storage.ready;
     DeployedContract _userContract = await getContract(
         "assets/userAbi.json", "User", storage.getItem("userAddress"));
-    String txnHash = await callUserContact("UnstakeTokens", [amount, email]);
+    String txnHash = await callUserContact("stakeTokens", [amount, email]);
     final ContractEvent event = _userContract.event("stakeToken");
     FilterOptions options = FilterOptions(
       address: _userContract.address,
@@ -173,7 +173,14 @@ class EthUtils {
   }
 
   Future<String> userDeposit(int amount, String email) async {
-    String txnHash = await callUserContact("stakeTokens", [amount, email]);
+    String url =
+        'https://openexchangerates.org/api/latest.json?app_id=a0b1ffe3d063455db6f29cda92b93977&base=USD&symbols=UGX&prettyprint=false&show_alternative=false';
+    var response = await http.get(Uri.parse(url));
+    var data = jsonDecode(response.body);
+    var monBalance = amount / data["rates"]["UGX"];
+    var calVal = EtherAmount.fromUnitAndValue(EtherUnit.ether, monBalance);
+
+    String txnHash = await callUserContact("deposit", [calVal.getInWei, email]);
     await Future.delayed(const Duration(seconds: 5));
     return txnHash;
   }
@@ -235,6 +242,7 @@ class EthUtils {
         contract: gencoin,
         function: tether.function("balanceOf"),
         params: [userAddress]);
-    return [monBalance, gencoinBalance[0]];
+    var val1 = EtherAmount.fromUnitAndValue(EtherUnit.wei, gencoinBalance[0]);
+    return [monBalance, val1];
   }
 }

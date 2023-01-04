@@ -1,9 +1,10 @@
 import 'package:blocksafe_mobile_app/Models/transaction.dart';
-import 'package:blocksafe_mobile_app/Pages/home.dart';
+import 'package:blocksafe_mobile_app/Services/database.dart';
 import 'package:blocksafe_mobile_app/Services/flutterwave.dart';
 import 'package:blocksafe_mobile_app/Widgets/Navigation/navigationbar.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:blocksafe_mobile_app/Services/eth_utils.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutterwave_standard/models/responses/charge_response.dart';
 //import 'package:flutter_paystack_client/flutter_paystack_client.dart';
@@ -20,11 +21,15 @@ class _TopUpState extends State<TopUp> {
   String _amount = "0";
   final _formKey = GlobalKey<FormState>();
   final User _user = FirebaseAuth.instance.currentUser!;
+  final EthUtils _ethUtils = EthUtils();
+
   @override
   Widget build(BuildContext context) {
+    _ethUtils.initialSetup();
     Stream<QuerySnapshot> _userTopUp = FirebaseFirestore.instance
         .collection('transactions')
         .where("transactionName", isEqualTo: "TopUp")
+        .where("email", isEqualTo: _user.email)
         .snapshots();
     return SafeArea(
         child: Scaffold(
@@ -85,8 +90,15 @@ class _TopUpState extends State<TopUp> {
                       if (_formKey.currentState!.validate() == true) {
                         ChargeResponse response = await PaymentService()
                             .handlePayment(context, int.parse(_amount));
-
-                        Navigator.push(context,
+                        String txn = await _ethUtils.userDeposit(
+                            int.parse(_amount), _user.email!);
+                        await DatabaseService(uid: _user.uid).addTransaction(
+                            _user.email!,
+                            txn,
+                            DateTime.now().microsecondsSinceEpoch,
+                            "TopUp",
+                            int.parse(_amount));
+                        await Navigator.push(context,
                             MaterialPageRoute(builder: (context) => NavBar()));
                       }
                     },
@@ -121,7 +133,7 @@ class _TopUpState extends State<TopUp> {
                             document.data()! as Map<String, dynamic>;
                         return TransactionDetails(
                           transactionName: data["transactionName"],
-                          timeStamp: data["timeStamp"],
+                          timeStamp: data["timestamp"],
                           transactionHash: data["transactionHash"],
                           cost: data["transactionCost"],
                         );

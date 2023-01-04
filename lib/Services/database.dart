@@ -16,7 +16,7 @@ class DatabaseService {
 
   Future<void> addTransaction(String email, String transactionHash,
       int timeStamp, String name, int cost) async {
-    await transactions.doc(uid).set({
+    await transactions.add({
       'email': email,
       'transactionHash': transactionHash,
       'timestamp': timeStamp,

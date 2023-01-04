@@ -159,7 +159,7 @@ class _HomeState extends State<Home> {
                                           timeStamp: data["timestamp"],
                                           transactionHash:
                                               data["transactionHash"],
-                                          cost: 0);
+                                          cost: data["transactionCost"]);
                                     }).toList(),
                                   );
                                 },

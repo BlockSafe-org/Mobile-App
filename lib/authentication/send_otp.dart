@@ -9,8 +9,9 @@ import 'package:pin_code_fields/pin_code_fields.dart';
 import '../Widgets/circle_painter.dart';
 
 class SendOTP extends StatefulWidget {
-  const SendOTP({required this.verId, super.key});
+  SendOTP({required this.verId, super.key});
   final String? verId;
+  User? _user = FirebaseAuth.instance.currentUser;
   @override
   State<SendOTP> createState() => _SendOTPState();
 }
@@ -112,28 +113,27 @@ class _SendOTPState extends State<SendOTP> {
                                     PhoneAuthProvider.credential(
                                         verificationId: widget.verId!,
                                         smsCode: codeController.text);
-                                await FirebaseAuth.instance.currentUser!
-                                    .updatePhoneNumber(credential)
-                                    .then((value) async {
-                                  User? _user =
-                                      FirebaseAuth.instance.currentUser;
-                                  String _txn =
-                                      await _ethUtils.addUser(_user!.email!);
-                                  await DatabaseService(uid: _user.uid)
-                                      .addTransaction(
-                                    _user.email!,
-                                    _txn,
-                                    DateTime.now().microsecondsSinceEpoch,
-                                    "Creation",
-                                    0,
-                                  )
-                                      .then((value) {
-                                    Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                            builder: ((context) =>
-                                                const NavBar())));
+                                await widget._user!
+                                    .updatePhoneNumber(credential);
+                                String _txn = await _ethUtils
+                                    .addUser(widget._user!.email!);
+                                await DatabaseService(uid: widget._user!.uid)
+                                    .addTransaction(
+                                  widget._user!.email!,
+                                  _txn,
+                                  DateTime.now().microsecondsSinceEpoch,
+                                  "Creation",
+                                  0,
+                                )
+                                    .then((value) {
+                                  setState(() {
+                                    loading = false;
                                   });
+                                  Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                          builder: ((context) =>
+                                              const NavBar())));
                                 });
                               },
                               child: Center(
