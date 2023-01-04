@@ -177,8 +177,9 @@ class EthUtils {
         'https://openexchangerates.org/api/latest.json?app_id=a0b1ffe3d063455db6f29cda92b93977&base=USD&symbols=UGX&prettyprint=false&show_alternative=false';
     var response = await http.get(Uri.parse(url));
     var data = jsonDecode(response.body);
-    var monBalance = amount / data["rates"]["UGX"];
-    var calVal = EtherAmount.fromUnitAndValue(EtherUnit.ether, monBalance);
+    var monBalance = (amount / data["rates"]["UGX"]) * 1000000000000000000;
+    var calVal =
+        EtherAmount.fromUnitAndValue(EtherUnit.wei, BigInt.from(monBalance));
 
     String txnHash = await callUserContact("deposit", [calVal.getInWei, email]);
     await Future.delayed(const Duration(seconds: 5));
@@ -243,6 +244,9 @@ class EthUtils {
         function: tether.function("balanceOf"),
         params: [userAddress]);
     var val1 = EtherAmount.fromUnitAndValue(EtherUnit.wei, gencoinBalance[0]);
-    return [monBalance, val1];
+    return [
+      monBalance.toStringAsFixed(3),
+      val1.getValueInUnit(EtherUnit.ether).toStringAsFixed(3)
+    ];
   }
 }

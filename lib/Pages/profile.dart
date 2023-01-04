@@ -1,3 +1,4 @@
+import 'package:blocksafe_mobile_app/Pages/Profile/verify.dart';
 import 'package:blocksafe_mobile_app/Services/auth.dart';
 import 'package:blocksafe_mobile_app/Widgets/title.dart';
 import 'package:blocksafe_mobile_app/Widgets/wrapper.dart';
@@ -30,7 +31,12 @@ class Profile extends StatelessWidget {
               child: Column(
                 children: [
                   ClickableContainer(
-                      onTap: () {}, title: "My Account", icon: Icons.person),
+                      onTap: () {
+                        Navigator.push(context,
+                            MaterialPageRoute(builder: (context) => Verify()));
+                      },
+                      title: "My Account",
+                      icon: Icons.person),
                   ClickableContainer(
                       onTap: () {}, title: "Settings", icon: Icons.settings),
                   ClickableContainer(
