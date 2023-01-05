@@ -7,12 +7,29 @@ import 'package:http/http.dart' as http;
 import 'package:localstorage/localstorage.dart';
 import 'package:web3dart/crypto.dart';
 import 'package:web3dart/web3dart.dart';
+import 'package:currency_formatter/currency_formatter.dart';
 
 class EthUtils {
   late http.Client httpClient;
   late Web3Client web3Client;
   final LocalStorage storage = LocalStorage("userAddress");
   dynamic balances;
+  CurrencyFormatterSettings settings = CurrencyFormatterSettings(
+    // formatter settings for euro
+    symbol: 'UGX',
+    symbolSide: SymbolSide.right,
+    thousandSeparator: ',',
+    decimalSeparator: '.',
+    symbolSeparator: ' ',
+  );
+  CurrencyFormatterSettings settings1 = CurrencyFormatterSettings(
+    // formatter settings for euro
+    symbol: 'GCN',
+    symbolSide: SymbolSide.right,
+    thousandSeparator: ',',
+    decimalSeparator: '.',
+    symbolSeparator: ' ',
+  );
 
   void initialSetup() async {
     httpClient = http.Client();
@@ -238,15 +255,17 @@ class EthUtils {
     var response = await http.get(Uri.parse(url));
     var data = jsonDecode(response.body);
     var monBalance = val.getInEther.toInt() * data["rates"]["UGX"];
+    String val1 = CurrencyFormatter.format(monBalance, settings, decimal: 2);
 
     final gencoinBalance = await web3Client.call(
         contract: gencoin,
         function: tether.function("balanceOf"),
         params: [userAddress]);
-    var val1 = EtherAmount.fromUnitAndValue(EtherUnit.wei, gencoinBalance[0]);
-    return [
-      monBalance.toStringAsFixed(3),
-      val1.getValueInUnit(EtherUnit.ether).toStringAsFixed(3)
-    ];
+    var genCoin =
+        EtherAmount.fromUnitAndValue(EtherUnit.wei, gencoinBalance[0]);
+    var val2 = CurrencyFormatter.format(
+        genCoin.getValueInUnit(EtherUnit.ether), settings1,
+        decimal: 2);
+    return [val1, val2];
   }
 }

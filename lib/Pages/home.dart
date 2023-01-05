@@ -7,6 +7,7 @@ import 'package:blocksafe_mobile_app/Pages/withdraw.dart';
 import 'package:blocksafe_mobile_app/Services/eth_utils.dart';
 import 'package:blocksafe_mobile_app/Widgets/title.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:currency_formatter/currency_formatter.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import "package:flutter/material.dart";
 import 'package:localstorage/localstorage.dart';
@@ -24,6 +25,14 @@ class Home extends StatefulWidget {
 class _HomeState extends State<Home> {
   final LocalStorage storage = LocalStorage("userAddress");
   final EthUtils _ethUtils = EthUtils();
+  CurrencyFormatterSettings settings = CurrencyFormatterSettings(
+    // formatter settings for euro
+    symbol: 'UGX',
+    symbolSide: SymbolSide.right,
+    thousandSeparator: ',',
+    decimalSeparator: '.',
+    symbolSeparator: ' ',
+  );
 
   // ignore: avoid_init_to_null
 
@@ -117,13 +126,12 @@ class _HomeState extends State<Home> {
                           children: <Widget>[
                             Balance(
                               imageLink: "assets/images/Icons/tether.png",
-                              balance: "${storage.getItem("balances")[0]} Ugx",
+                              balance: "${storage.getItem("balances")[0]}",
                             ),
                             Balance(
                               imageLink: "assets/images/Icons/gencoin.png",
                               scale: 2,
-                              balance:
-                                  "${storage.getItem("balances")[1]} Gencoin",
+                              balance: "${storage.getItem("balances")[1]}",
                             )
                           ],
                         ),
@@ -159,7 +167,9 @@ class _HomeState extends State<Home> {
                                           timeStamp: data["timestamp"],
                                           transactionHash:
                                               data["transactionHash"],
-                                          cost: data["transactionCost"]);
+                                          cost: CurrencyFormatter.format(
+                                              data["transactionCost"], settings,
+                                              decimal: 2));
                                     }).toList(),
                                   );
                                 },

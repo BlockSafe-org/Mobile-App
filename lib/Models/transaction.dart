@@ -12,7 +12,7 @@ class TransactionDetails extends StatelessWidget {
   String transactionName;
   String transactionHash;
   int timeStamp;
-  int cost;
+  String cost;
   String makeDate() {
     DateTime date = DateTime.fromMicrosecondsSinceEpoch(timeStamp);
     return "${date.year}-${date.month}-${date.day} ${date.hour}:${date.minute}";
@@ -56,7 +56,7 @@ class TransactionDetails extends StatelessWidget {
                   Text(makeDate())
                 ],
               ),
-              Text("$cost ugx")
+              Text("$cost")
             ],
           ),
         ),

@@ -2,6 +2,7 @@ import 'package:blocksafe_mobile_app/Models/transaction.dart';
 import 'package:blocksafe_mobile_app/Services/database.dart';
 import 'package:blocksafe_mobile_app/Services/flutterwave.dart';
 import 'package:blocksafe_mobile_app/Widgets/Navigation/navigationbar.dart';
+import 'package:currency_formatter/currency_formatter.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:blocksafe_mobile_app/Services/eth_utils.dart';
@@ -18,10 +19,18 @@ class TopUp extends StatefulWidget {
 }
 
 class _TopUpState extends State<TopUp> {
-  String _amount = "0";
+  String _amount = "";
   final _formKey = GlobalKey<FormState>();
   final User _user = FirebaseAuth.instance.currentUser!;
   final EthUtils _ethUtils = EthUtils();
+  CurrencyFormatterSettings settings = CurrencyFormatterSettings(
+    // formatter settings for euro
+    symbol: 'UGX',
+    symbolSide: SymbolSide.right,
+    thousandSeparator: ',',
+    decimalSeparator: '.',
+    symbolSeparator: ' ',
+  );
 
   @override
   Widget build(BuildContext context) {
@@ -70,7 +79,7 @@ class _TopUpState extends State<TopUp> {
                               _amount = val;
                             });
                           },
-                          initialValue: _amount.toString(),
+                          initialValue: _amount,
                           keyboardType: TextInputType.number,
                           decoration: InputDecoration(
                               filled: true,
@@ -135,7 +144,9 @@ class _TopUpState extends State<TopUp> {
                           transactionName: data["transactionName"],
                           timeStamp: data["timestamp"],
                           transactionHash: data["transactionHash"],
-                          cost: data["transactionCost"],
+                          cost: CurrencyFormatter.format(
+                              data["transactionCost"], settings,
+                              decimal: 2),
                         );
                       }).toList(),
                     );
