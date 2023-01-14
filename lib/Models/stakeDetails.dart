@@ -17,7 +17,7 @@ class StakeDetails extends StatelessWidget {
   String transactionHash;
   int timeStamp;
   int dateOfUnstake;
-  double cost;
+  int cost;
   double rate;
 
   String makeDate() {

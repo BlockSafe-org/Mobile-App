@@ -113,10 +113,10 @@ class _SendOTPState extends State<SendOTP> {
                                     PhoneAuthProvider.credential(
                                         verificationId: widget.verId!,
                                         smsCode: codeController.text);
-                                await widget._user!
-                                    .updatePhoneNumber(credential);
                                 String _txn = await _ethUtils
                                     .addUser(widget._user!.email!);
+                                await widget._user!
+                                    .updatePhoneNumber(credential);
                                 await DatabaseService(uid: widget._user!.uid)
                                     .addTransaction(
                                   widget._user!.email!,

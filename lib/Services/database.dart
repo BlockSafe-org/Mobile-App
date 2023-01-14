@@ -27,7 +27,7 @@ class DatabaseService {
 
   Future<void> addStakeTransaction(String transactionHash, int timeStamp,
       String name, int cost, double interest, int dateOfUnstake) async {
-    await stakes.doc(uid).set({
+    await stakes.add({
       'transactionHash': transactionHash,
       'timestamp': timeStamp,
       "transactionName": name,
@@ -39,7 +39,7 @@ class DatabaseService {
 
   Future<void> addBorrowTransaction(String transactionHash, int timeStamp,
       String name, int cost, double interest) async {
-    await borrows.doc(uid).set({
+    await borrows.add({
       'transactionHash': transactionHash,
       'timestamp': timeStamp,
       "transactionName": name,
@@ -50,7 +50,7 @@ class DatabaseService {
 
   Future<void> addTransferTransaction(String transactionHash, int timeStamp,
       String name, int cost, String to, String from, String message) async {
-    await transfers.doc(uid).set({
+    await transfers.add({
       'transactionHash': transactionHash,
       'timestamp': timeStamp,
       "transactionName": name,

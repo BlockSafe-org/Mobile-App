@@ -55,13 +55,20 @@ class _RegisterState extends State<Register> {
                         controller: emailController,
                         hint: "Email Address",
                         isObscure: false),
-                    const SizedBox(height: 30),
+                    const SizedBox(height: 20),
                     InputData(
                         validator: (val) => val!.length < 6
                             ? "Enter a password with more than 6 characters!"
                             : null,
                         controller: passwordController,
                         hint: "Password",
+                        isObscure: true),
+                    const SizedBox(height: 20),
+                    InputData(
+                        validator: (val) => val != passwordController.text
+                            ? "Passwords do not match!"
+                            : null,
+                        hint: "Re-enter Password",
                         isObscure: true),
                     const SizedBox(
                       height: 50,

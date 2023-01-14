@@ -1,18 +1,15 @@
 import 'package:blocksafe_mobile_app/Models/stakeDetails.dart';
 import 'package:blocksafe_mobile_app/Models/stakePeriod.dart';
-import 'package:blocksafe_mobile_app/Services/auth.dart';
 import 'package:blocksafe_mobile_app/Services/database.dart';
 import 'package:blocksafe_mobile_app/Services/eth_utils.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
-import '../Services/provider_widget.dart';
 import '../styles/colors.dart';
 
 class Stake extends StatefulWidget {
   Stake({super.key, required this.balance});
-  double balance;
+  String balance;
   late double interest;
   late int dateOfUnstake;
 
@@ -59,10 +56,7 @@ class _StakeState extends State<Stake> {
                         height: 60,
                         child: TextFormField(
                           validator: (val) {
-                            if (int.parse(val!) > widget.balance) {
-                              return "You cannot stake more than ${widget.balance}";
-                            }
-                            if (int.parse(val) <= 1000) {
+                            if (int.parse(val!) <= 1000) {
                               return "You cannot stake less than 1000 ugx";
                             }
 
@@ -132,8 +126,7 @@ class _StakeState extends State<Stake> {
                 child: SizedBox(
                     width: MediaQuery.of(context).size.width - 50,
                     height: 50,
-                    child: Card(
-                        child: Center(child: Text("${widget.balance} ugx")))),
+                    child: Card(child: Center(child: Text(widget.balance)))),
               ),
               SizedBox(height: 40),
               SizedBox(
@@ -145,18 +138,16 @@ class _StakeState extends State<Stake> {
                         try {
                           print(widget.interest);
                           print(widget.dateOfUnstake);
-                          // String _txn = await _ethUtils.userStake(context,
-                          //     int.parse(_amount),
-                          //     _user.email!);
-                          // await DatabaseService(
-                          //         uid: _user.uid)
-                          //     .addStakeTransaction(
-                          //         _txn,
-                          //         DateTime.now().microsecondsSinceEpoch,
-                          //         "Stake",
-                          //         int.parse(_amount),
-                          //         widget.interest,
-                          //         widget.dateOfUnstake);
+                          String _txn = await _ethUtils.userStake(
+                              context, int.parse(_amount), _user.email!);
+                          await DatabaseService(uid: _user.uid)
+                              .addStakeTransaction(
+                                  _txn,
+                                  DateTime.now().microsecondsSinceEpoch,
+                                  "Stake",
+                                  int.parse(_amount),
+                                  widget.interest,
+                                  widget.dateOfUnstake);
                         } catch (e) {
                           print(e);
                         }
@@ -193,7 +184,7 @@ class _StakeState extends State<Stake> {
                             document.data()! as Map<String, dynamic>;
                         return StakeDetails(
                             transactionName: data["transactionName"],
-                            timeStamp: data["timeStamp"],
+                            timeStamp: data["timestamp"],
                             transactionHash: data["transactionHash"],
                             rate: data["interest"],
                             cost: data["transactionCost"],

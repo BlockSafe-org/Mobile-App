@@ -16,7 +16,7 @@ class _StakePeriodState extends State<StakePeriod> {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: widget.onTap(),
+      onTap: widget.onTap,
       child: SizedBox(
         width: 70,
         height: 80,

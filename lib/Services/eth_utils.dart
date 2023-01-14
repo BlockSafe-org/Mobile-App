@@ -37,11 +37,15 @@ class EthUtils {
         "https://sepolia.infura.io/v3/e6ef64d22a5f4e45a5fd5ccae89551c1";
     web3Client = Web3Client(infura, httpClient);
     storage.setItem(
-        "mainSafeAddress", "0xe2E4Ce1d83AC463A4b3A891aCf0B823E1e0ab3A0");
+        "mainSafeAddress", "0x7459715E56791bcEFb5D1F7c93f6DF582Bb371b5");
     storage.setItem(
-        "tetherAddress", "0x54D35F920ede63989f983a1D8733f09f3805241E");
+        "tetherAddress", "0xf0F3D73f42f5138379A442fc705C1301081330b4");
     storage.setItem(
-        "gencoinAddress", "0xc3b1cC14b209E5002cAe60e0be4CDd4A027dd802");
+        "gencoinAddress", "0xDA00325388287b8A469b646B2488eFAd67613530");
+    storage.setItem("balances", [
+      CurrencyFormatter.format(0, settings, decimal: 2),
+      CurrencyFormatter.format(0, settings1, decimal: 2)
+    ]);
   }
 
   // Function to check whether the email is valid and registered in mainsafe.
@@ -114,11 +118,8 @@ class EthUtils {
         storage.setItem("balances", balances);
       }
     });
-    if (storage.getItem("userAddress") != null) {
-      balances = await loadBalances();
-      storage.setItem("balances", balances);
-    }
-    ;
+    balances = await loadBalances();
+    storage.setItem("balances", balances);
     await callMainSafe("checkEmail", [email]);
   }
 
@@ -144,7 +145,15 @@ class EthUtils {
     await storage.ready;
     DeployedContract _userContract = await getContract(
         "assets/userAbi.json", "User", storage.getItem("userAddress"));
-    String txnHash = await callUserContact("stakeTokens", [amount, email]);
+    String url =
+        'https://openexchangerates.org/api/latest.json?app_id=a0b1ffe3d063455db6f29cda92b93977&base=USD&symbols=UGX&prettyprint=false&show_alternative=false';
+    var response = await http.get(Uri.parse(url));
+    var data = jsonDecode(response.body);
+    var monBalance = (amount / data["rates"]["UGX"]) * 1000000000000000000;
+    var calVal = EtherAmount.fromUnitAndValue(
+        EtherUnit.wei, BigInt.from(monBalance + monBalance * 0.3));
+    String txnHash =
+        await callUserContact("stakeTokens", [calVal.getInWei, email]);
     final ContractEvent event = _userContract.event("stakeToken");
     FilterOptions options = FilterOptions(
       address: _userContract.address,
@@ -169,7 +178,15 @@ class EthUtils {
     await storage.ready;
     DeployedContract _userContract = await getContract(
         "assets/userAbi.json", "User", storage.getItem("userAddress"));
-    String txnHash = await callUserContact("unstakeTokens", [amount, email]);
+    String url =
+        'https://openexchangerates.org/api/latest.json?app_id=a0b1ffe3d063455db6f29cda92b93977&base=USD&symbols=UGX&prettyprint=false&show_alternative=false';
+    var response = await http.get(Uri.parse(url));
+    var data = jsonDecode(response.body);
+    var monBalance = (amount / data["rates"]["UGX"]) * 1000000000000000000;
+    var calVal = EtherAmount.fromUnitAndValue(
+        EtherUnit.wei, BigInt.from(monBalance + monBalance * 0.3));
+    String txnHash =
+        await callUserContact("unstakeTokens", [calVal.getInWei, email]);
     final ContractEvent event = _userContract.event("stakeToken");
     FilterOptions options = FilterOptions(
       address: _userContract.address,
@@ -183,7 +200,7 @@ class EthUtils {
     events.listen((e) {
       var stakevalue = hexToBytes(e.data!);
       print(stakevalue);
-      Provider.of(context).setStakeBalance(stakevalue[0]);
+      Provider.of(context).setStakeBalance(int.parse(stakevalue.join("")));
     });
     await Future.delayed(const Duration(seconds: 5));
     return txnHash;
@@ -195,8 +212,8 @@ class EthUtils {
     var response = await http.get(Uri.parse(url));
     var data = jsonDecode(response.body);
     var monBalance = (amount / data["rates"]["UGX"]) * 1000000000000000000;
-    var calVal =
-        EtherAmount.fromUnitAndValue(EtherUnit.wei, BigInt.from(monBalance));
+    var calVal = EtherAmount.fromUnitAndValue(
+        EtherUnit.wei, BigInt.from(monBalance + monBalance * 0.3));
 
     String txnHash = await callUserContact("deposit", [calVal.getInWei, email]);
     await Future.delayed(const Duration(seconds: 5));

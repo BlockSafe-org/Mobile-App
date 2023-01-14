@@ -4,13 +4,13 @@ class InputData extends StatelessWidget {
   InputData(
       {Key? key,
       required this.validator,
-      required this.controller,
+      this.controller,
       required this.isObscure,
       required this.hint,
       this.inputType})
       : super(key: key);
 
-  final TextEditingController controller;
+  final TextEditingController? controller;
   final String hint;
   final String? Function(String?) validator;
   bool isObscure;
