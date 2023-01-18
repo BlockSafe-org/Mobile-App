@@ -150,10 +150,8 @@ class EthUtils {
     var response = await http.get(Uri.parse(url));
     var data = jsonDecode(response.body);
     var monBalance = (amount / data["rates"]["UGX"]) * 1000000000000000000;
-    var calVal = EtherAmount.fromUnitAndValue(
-        EtherUnit.wei, BigInt.from(monBalance + monBalance * 0.3));
     String txnHash =
-        await callUserContact("stakeTokens", [calVal.getInWei, email]);
+        await callUserContact("stakeTokens", [BigInt.from(monBalance), email]);
     final ContractEvent event = _userContract.event("stakeToken");
     FilterOptions options = FilterOptions(
       address: _userContract.address,
@@ -183,10 +181,9 @@ class EthUtils {
     var response = await http.get(Uri.parse(url));
     var data = jsonDecode(response.body);
     var monBalance = (amount / data["rates"]["UGX"]) * 1000000000000000000;
-    var calVal = EtherAmount.fromUnitAndValue(
-        EtherUnit.wei, BigInt.from(monBalance + monBalance * 0.3));
-    String txnHash =
-        await callUserContact("unstakeTokens", [calVal.getInWei, email]);
+
+    String txnHash = await callUserContact(
+        "unstakeTokens", [BigInt.from(monBalance), email]);
     final ContractEvent event = _userContract.event("stakeToken");
     FilterOptions options = FilterOptions(
       address: _userContract.address,
@@ -211,11 +208,14 @@ class EthUtils {
         'https://openexchangerates.org/api/latest.json?app_id=a0b1ffe3d063455db6f29cda92b93977&base=USD&symbols=UGX&prettyprint=false&show_alternative=false';
     var response = await http.get(Uri.parse(url));
     var data = jsonDecode(response.body);
-    var monBalance = (amount / data["rates"]["UGX"]) * 1000000000000000000;
-    var calVal = EtherAmount.fromUnitAndValue(
-        EtherUnit.wei, BigInt.from(monBalance + monBalance * 0.3));
-
-    String txnHash = await callUserContact("deposit", [calVal.getInWei, email]);
+    double rate = data["rates"]["UGX"];
+    double monBalance = (amount / rate) * 1000000000000000000;
+    EtherAmount _amount =
+        EtherAmount.fromUnitAndValue(EtherUnit.wei, BigInt.from(monBalance));
+    print((_amount.getInWei.toInt() / 1000000000000000000) *
+        data["rates"]["UGX"]);
+    String txnHash =
+        await callUserContact("deposit", [BigInt.from(monBalance), email]);
     await Future.delayed(const Duration(seconds: 5));
     return txnHash;
   }
@@ -271,7 +271,8 @@ class EthUtils {
         'https://openexchangerates.org/api/latest.json?app_id=a0b1ffe3d063455db6f29cda92b93977&base=USD&symbols=UGX&prettyprint=false&show_alternative=false';
     var response = await http.get(Uri.parse(url));
     var data = jsonDecode(response.body);
-    var monBalance = val.getInEther.toInt() * data["rates"]["UGX"];
+    var monBalance =
+        (val.getInWei.toInt() / 1000000000000000000) * data["rates"]["UGX"];
     String val1 = CurrencyFormatter.format(monBalance, settings, decimal: 2);
 
     final gencoinBalance = await web3Client.call(

@@ -97,16 +97,16 @@ class _TopUpState extends State<TopUp> {
                   child: ElevatedButton(
                     onPressed: () async {
                       if (_formKey.currentState!.validate() == true) {
-                        ChargeResponse response = await PaymentService()
-                            .handlePayment(context, int.parse(_amount));
+                        // ChargeResponse response = await PaymentService()
+                        //     .handlePayment(context, int.parse(_amount));
                         String txn = await _ethUtils.userDeposit(
                             int.parse(_amount), _user.email!);
-                        await DatabaseService(uid: _user.uid).addTransaction(
-                            _user.email!,
-                            txn,
-                            DateTime.now().microsecondsSinceEpoch,
-                            "TopUp",
-                            int.parse(_amount));
+                        // await DatabaseService(uid: _user.uid).addTransaction(
+                        //     _user.email!,
+                        //     txn,
+                        //     DateTime.now().microsecondsSinceEpoch,
+                        //     "TopUp",
+                        //     int.parse(_amount));
                         await Navigator.push(context,
                             MaterialPageRoute(builder: (context) => NavBar()));
                       }
